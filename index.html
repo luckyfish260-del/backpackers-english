@@ -2,13 +2,10 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <!-- 核心設定：允許雙指縮放 (最大放大 5 倍) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>背包客英文 - 多媒體與題庫學習平台</title>
   
-  <!-- PDF 解析庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- Word (.docx) 解析庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -40,7 +37,6 @@
       position: relative;
     }
 
-    /* 手機側邊欄遮罩 */
     .sidebar-overlay {
       display: none;
       position: fixed;
@@ -50,7 +46,6 @@
     }
     .sidebar-overlay.active { display: block; }
 
-    /* 左側選單列 */
     aside {
       width: 320px;
       background-color: var(--sidebar-bg);
@@ -186,7 +181,6 @@
     }
     .add-yt-btn:hover { background: #f1f5f9; }
 
-    /* 主內容區 */
     main {
       flex: 1;
       display: flex;
@@ -244,7 +238,6 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* 響應式內容容器（電腦版預設樣式：最大寬度 1200px、居中、內邊距 20px） */
     .content-card {
       background: var(--card-bg);
       border-radius: 8px;
@@ -270,7 +263,6 @@
       margin-bottom: 0.6rem;
     }
 
-    /* 表格自適應與滾動 */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -288,7 +280,6 @@
     }
     table th { background-color: #f1f5f9; }
 
-    /* 影音播放器容器 */
     .media-container {
       margin: 1.25rem 0;
       background: #0f172a;
@@ -322,9 +313,6 @@
       outline: none;
     }
 
-    /* ========================================================
-       手機螢幕（寬度 768px 以下）自適應調整
-       ======================================================== */
     @media (max-width: 768px) {
       aside {
         position: fixed;
@@ -337,31 +325,23 @@
       aside.open { transform: translateX(0); }
       .close-sidebar-btn { display: block; }
       .menu-toggle-btn { display: block; }
-      
       .main-header { padding: 0.65rem 0.85rem; }
       .main-header h1 { font-size: 1rem; }
       .main-body { padding: 0.5rem; }
-
-      /* 手機版內邊距調整為 10px */
-      .content-card {
-        padding: 10px;
-        border-radius: 6px;
-      }
+      .content-card { padding: 10px; border-radius: 6px; }
       .btn { padding: 0.35rem 0.55rem; font-size: 0.75rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- 手機版選單遮罩 -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <!-- 側邊欄清單 -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <div>
         <h2>🎒 背包客英文</h2>
-        <div class="db-status">● 支援縮放、影音與教材</div>
+        <div class="db-status">● 完整教材與影音庫</div>
       </div>
       <button class="close-sidebar-btn" onclick="closeSidebar()" title="關閉選單">✕</button>
     </div>
@@ -381,7 +361,6 @@
     </div>
   </aside>
 
-  <!-- 主內容閱讀區 -->
   <main>
     <header class="main-header">
       <div class="header-left">
@@ -400,8 +379,8 @@
   </main>
 
   <script>
-    const DB_NAME = 'BackpackersZoomDB';
-    const DB_VERSION = 1;
+    const MAIN_DB_NAME = 'BackpackersMasterDB';
+    const OLD_DB_NAMES = ['BackpackersDB', 'BackpackersResponsiveDB', 'BackpackersCleanDB', 'BackpackersZoomDB'];
     const STORE_NAME = 'documents';
     let db;
     let documents = [];
@@ -417,33 +396,39 @@
       document.getElementById('sidebarOverlay').classList.remove('active');
     }
 
-    function openDatabase() {
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
+    function openDB(dbName) {
+      return new Promise((resolve) => {
+        const req = indexedDB.open(dbName, 1);
         req.onupgradeneeded = (e) => {
-          const dbInstance = e.target.result;
-          if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
-            dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          const inst = e.target.result;
+          if (!inst.objectStoreNames.contains(STORE_NAME)) {
+            inst.createObjectStore(STORE_NAME, { keyPath: 'id' });
           }
         };
-        req.onsuccess = (e) => {
-          db = e.target.result;
-          resolve(db);
-        };
-        req.onerror = (e) => reject(e);
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
       });
     }
 
-    function getAllDocsFromDB() {
+    function readAllFromDB(dbInst) {
       return new Promise((resolve) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result || []);
+        if (!dbInst || !dbInst.objectStoreNames.contains(STORE_NAME)) {
+          resolve([]);
+          return;
+        }
+        try {
+          const tx = dbInst.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch(e) {
+          resolve([]);
+        }
       });
     }
 
-    function saveDocToDB(doc) {
+    function saveDocToMaster(doc) {
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
@@ -452,7 +437,7 @@
       });
     }
 
-    function deleteDocFromDB(id) {
+    function deleteDocFromMaster(id) {
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
@@ -462,45 +447,56 @@
     }
 
     async function init() {
-      await openDatabase();
-      documents = await getAllDocsFromDB();
-      
-      const hasInitKey = localStorage.getItem('bp_init_zoom_v1');
-      if (!hasInitKey && documents.length === 0) {
-        const defaultDocs = [
-          {
-            id: "doc-syllabus",
-            title: "0-2 教學大綱與總學習指引",
-            date: "2026/09",
-            content: `
-              <span class="badge">課程資訊</span>
-              <h2>課程名稱：背包客英文 (English for Backpackers)</h2>
-              <p><strong>學分數：</strong> 2 學分 ｜ <strong>授課方式：</strong> 全遠距（支援手機雙指手勢放大）</p>
-              <hr style="margin:0.8rem 0;">
-              <h3>🎯 評量方式</h3>
-              <table>
-                <tr><th>項目</th><th>比重</th><th>時程規定</th></tr>
-                <tr><td>平時成績</td><td>30%</td><td>2026/12/31 前完成</td></tr>
-                <tr><td>期中考試</td><td>30%</td><td>115/11/2 - 115/11/8</td></tr>
-                <tr><td>期末考試</td><td>40%</td><td>116/1/4 - 116/1/10</td></tr>
-              </table>
-              <h3 style="margin-top:1rem;">💻 同步視訊面授</h3>
-              <p>9/10、10/8、11/12、12/24 (週四晚)</p>
-            `
+      db = await openDB(MAIN_DB_NAME);
+      let masterDocs = await readAllFromDB(db);
+
+      // 自動從所有舊資料庫還原被遺留的檔案
+      const seenIds = new Set(masterDocs.map(d => d.id));
+      for (const oldName of OLD_DB_NAMES) {
+        const oldDB = await openDB(oldName);
+        if (oldDB) {
+          const oldDocs = await readAllFromDB(oldDB);
+          for (const d of oldDocs) {
+            if (!seenIds.has(d.id)) {
+              seenIds.add(d.id);
+              masterDocs.push(d);
+              await saveDocToMaster(d);
+            }
           }
-        ];
-        for (const doc of defaultDocs) {
-          await saveDocToDB(doc);
         }
-        documents = defaultDocs;
-        localStorage.setItem('bp_init_zoom_v1', 'true');
+      }
+
+      documents = masterDocs;
+
+      // 若完全為空，加入預設大綱
+      if (documents.length === 0) {
+        const defaultDoc = {
+          id: "doc-syllabus",
+          title: "0-2 教學大綱與總學習指引",
+          date: "2026/09",
+          content: `
+            <span class="badge">課程資訊</span>
+            <h2>課程名稱：背包客英文 (English for Backpackers)</h2>
+            <p><strong>學分數：</strong> 2 學分 ｜ <strong>授課方式：</strong> 全遠距</p>
+            <hr style="margin:0.8rem 0;">
+            <h3>🎯 評量方式</h3>
+            <table>
+              <tr><th>項目</th><th>比重</th><th>時程規定</th></tr>
+              <tr><td>平時成績</td><td>30%</td><td>2026/12/31 前完成</td></tr>
+              <tr><td>期中考試</td><td>30%</td><td>115/11/2 - 115/11/8</td></tr>
+              <tr><td>期末考試</td><td>40%</td><td>116/1/4 - 116/1/10</td></tr>
+            </table>
+            <h3 style="margin-top:1rem;">💻 同步視訊面授</h3>
+            <p>9/10、10/8、11/12、12/24 (週四晚)</p>
+          `
+        };
+        await saveDocToMaster(defaultDoc);
+        documents = [defaultDoc];
       }
 
       renderFileList();
       if (documents.length > 0) {
         selectDocument(documents[0].id);
-      } else {
-        showEmptyView();
       }
     }
 
@@ -521,7 +517,7 @@
         const item = document.createElement('div');
         item.className = `file-item ${doc.id === currentDocId ? 'active' : ''}`;
         
-        item.onclick = (e) => {
+        item.onclick = () => {
           selectDocument(doc.id);
           closeSidebar();
         };
@@ -538,7 +534,6 @@
         delBtn.innerHTML = '✕';
         delBtn.title = '刪除此項目';
         
-        // 阻止點擊事件向上冒泡
         delBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -575,7 +570,7 @@
       const confirmed = window.confirm(`確定要刪除「${docTitle}」嗎？`);
       if (!confirmed) return;
 
-      await deleteDocFromDB(id);
+      await deleteDocFromMaster(id);
       documents = documents.filter(d => d.id !== id);
 
       if (currentDocId === id) {
@@ -585,7 +580,6 @@
           showEmptyView();
         }
       }
-      
       renderFileList(document.getElementById('searchInput').value);
     }
 
@@ -657,7 +651,7 @@
         }
 
         const newDoc = { id: newId, title: fileNameNoExt, date: now, content: generatedContent };
-        await saveDocToDB(newDoc);
+        await saveDocToMaster(newDoc);
         documents.push(newDoc);
       }
 
@@ -692,7 +686,7 @@
       `;
 
       const newDoc = { id: newId, title: `🎬 ${title}`, date: now, content };
-      await saveDocToDB(newDoc);
+      await saveDocToMaster(newDoc);
       documents.push(newDoc);
 
       renderFileList();
@@ -724,7 +718,7 @@
         btn.innerText = '✏️ 編輯';
         const updated = document.getElementById('docEditor').value;
         doc.content = updated;
-        await saveDocToDB(doc);
+        await saveDocToMaster(doc);
         card.innerHTML = updated;
       }
     }
