@@ -2,10 +2,13 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
+  <!-- 手機雙指縮放支援 (放大倍率可達 5.0) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>背包客英文 - 多媒體與題庫學習平台</title>
+  <title>背包客英文 - 多功能英語學習平台</title>
   
+  <!-- PDF 解析庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Word (.docx) 解析庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -23,6 +26,7 @@
       --border: #e2e8f0;
       --danger: #ef4444;
       --success: #10b981;
+      --folder-color: #f59e0b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,150 +41,208 @@
       position: relative;
     }
 
+    /* 手機側邊遮罩 */
     .sidebar-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.45);
       z-index: 40;
     }
     .sidebar-overlay.active { display: block; }
 
+    /* 左側選單欄 */
     aside {
-      width: 320px;
+      width: 330px;
       background-color: var(--sidebar-bg);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
       z-index: 50;
-      transition: transform 0.3s ease;
+      transition: width 0.25s ease, transform 0.25s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 電腦版選單完全折疊狀態 */
+    aside.collapsed {
+      width: 0 !important;
+      border-right: none;
     }
 
     .sidebar-header {
-      padding: 1rem 1.25rem;
+      padding: 1rem 1.15rem;
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      min-width: 330px;
     }
     .sidebar-header h2 {
       font-size: 1.1rem;
       font-weight: 700;
       color: var(--primary);
     }
-    .close-sidebar-btn {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 1.25rem;
-      cursor: pointer;
-      color: var(--text-muted);
-      padding: 4px;
-    }
     .db-status {
       font-size: 0.72rem;
       color: var(--success);
-      margin-top: 0.2rem;
+      margin-top: 0.15rem;
     }
 
+    .sidebar-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .icon-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .icon-btn:hover { background: #f1f5f9; color: var(--text-main); }
+
     .search-box {
-      padding: 0.75rem 1rem;
+      padding: 0.65rem 1rem;
       border-bottom: 1px solid var(--border);
+      min-width: 330px;
     }
     .search-box input {
       width: 100%;
-      padding: 0.5rem 0.75rem;
+      padding: 0.45rem 0.65rem;
       border: 1px solid var(--border);
       border-radius: 6px;
-      font-size: 0.875rem;
+      font-size: 0.85rem;
       outline: none;
     }
 
-    .file-list {
+    /* 檔案與資料夾樹狀列表 */
+    .tree-container {
       flex: 1;
       overflow-y: auto;
-      padding: 0.5rem 0.75rem;
+      padding: 0.5rem 0.6rem;
+      min-width: 330px;
     }
-    .file-item {
+
+    .folder-block {
+      margin-bottom: 0.4rem;
+    }
+    .folder-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.65rem 0.75rem;
-      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
       cursor: pointer;
-      margin-bottom: 0.35rem;
-      border: 1px solid transparent;
-      transition: background 0.15s;
-    }
-    .file-item:hover { background-color: #f1f5f9; }
-    .file-item.active { background-color: #eff6ff; border-color: #bfdbfe; }
-    
-    .file-info { 
-      overflow: hidden; 
-      flex: 1;
-      margin-right: 0.5rem;
-    }
-    .file-title {
-      font-size: 0.85rem;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      font-size: 0.86rem;
       font-weight: 600;
+      user-select: none;
+    }
+    .folder-header:hover { background: #f1f5f9; }
+    .folder-left {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      overflow: hidden;
+    }
+    .folder-arrow {
+      font-size: 0.7rem;
+      width: 14px;
+      display: inline-block;
+      transition: transform 0.15s ease;
+      color: var(--text-muted);
+    }
+    .folder-title {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .file-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
-    
-    .btn-delete {
-      color: var(--text-muted);
-      background: #f1f5f9;
-      border: 1px solid var(--border);
-      width: 28px;
-      height: 28px;
+    .folder-items {
+      padding-left: 1.1rem;
+      margin-top: 0.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .folder-items.hidden { display: none; }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.65rem;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.85rem;
+      background: #fff;
+      border: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .file-item:hover { background-color: #f1f5f9; }
+    .file-item.active { background-color: #eff6ff; border-color: #bfdbfe; font-weight: 600; }
+    .file-title-text {
+      font-size: 0.82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      margin-right: 0.35rem;
+    }
+
+    .del-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
     }
-    .btn-delete:hover, .btn-delete:active { 
-      color: #fff; 
-      background-color: var(--danger); 
-      border-color: var(--danger);
-    }
+    .del-btn:hover { background: var(--danger); color: #fff; }
 
+    /* 側邊動作欄 */
     .sidebar-actions {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 0.9rem;
       border-top: 1px solid var(--border);
       background: #fafafa;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.35rem;
+      min-width: 330px;
     }
-    .upload-btn-label {
-      background-color: var(--primary);
-      color: white;
-      padding: 0.6rem;
+    .action-row {
+      display: flex;
+      gap: 0.35rem;
+    }
+    .btn-action {
+      flex: 1;
+      padding: 0.55rem;
       border-radius: 6px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
-    }
-    .upload-btn-label:hover { background-color: var(--primary-hover); }
-    .add-yt-btn {
-      background: #fff;
       border: 1px solid var(--border);
-      color: #334155;
-      padding: 0.45rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      font-weight: 600;
+      background: #fff;
     }
-    .add-yt-btn:hover { background: #f1f5f9; }
+    .btn-action:hover { background: #f1f5f9; }
+    .btn-primary-action {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary-action:hover { background: var(--primary-hover); }
 
+    /* 主區域 */
     main {
       flex: 1;
       display: flex;
@@ -189,7 +251,7 @@
       width: 100%;
     }
     .main-header {
-      padding: 0.85rem 1.25rem;
+      padding: 0.75rem 1.25rem;
       background: #fff;
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -200,36 +262,28 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
       overflow: hidden;
     }
-    .menu-toggle-btn {
-      display: none;
-      background: none;
+    .toggle-sidebar-btn {
+      background: #fff;
       border: 1px solid var(--border);
-      padding: 0.4rem 0.6rem;
+      padding: 0.35rem 0.6rem;
       border-radius: 6px;
-      font-size: 1.1rem;
+      font-size: 1rem;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    .toggle-sidebar-btn:hover { background: #f1f5f9; }
     .main-header h1 {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .action-controls { display: flex; gap: 0.4rem; flex-shrink: 0; }
-    .btn {
-      padding: 0.4rem 0.75rem;
-      font-size: 0.8rem;
-      border-radius: 6px;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: #fff;
-    }
-    .btn:hover { background: #f1f5f9; }
-    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     .main-body {
       flex: 1;
@@ -238,16 +292,17 @@
       -webkit-overflow-scrolling: touch;
     }
 
+    /* 內容容器 (電腦版 1200px 置中) */
     .content-card {
       background: var(--card-bg);
       border-radius: 8px;
       border: 1px solid var(--border);
       min-height: 100%;
-      line-height: 1.65;
+      line-height: 1.7;
       overflow-x: auto;
       max-width: 1200px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 24px;
       width: 100%;
       box-sizing: border-box;
     }
@@ -274,21 +329,38 @@
     }
     table th, table td {
       border: 1px solid var(--border);
-      padding: 0.55rem 0.75rem;
+      padding: 0.6rem 0.8rem;
       text-align: left;
-      min-width: 90px;
+      min-width: 100px;
     }
     table th { background-color: #f1f5f9; }
 
-    .media-container {
+    /* 聽力播放器模組 */
+    .audio-player-box {
       margin: 1.25rem 0;
       background: #0f172a;
       border-radius: 8px;
-      padding: 0.75rem;
-      display: flex;
-      justify-content: center;
+      padding: 1rem;
+      color: #fff;
     }
-    audio, video { width: 100%; max-width: 100%; }
+    .audio-player-box audio { width: 100%; margin-bottom: 0.5rem; }
+    .audio-speed-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+    .speed-btn {
+      background: #334155;
+      color: #f8fafc;
+      border: none;
+      padding: 0.25rem 0.55rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .speed-btn.active { background: var(--primary); }
+
     .yt-iframe-container {
       position: relative;
       padding-bottom: 56.25%;
@@ -305,71 +377,80 @@
 
     .editable-area {
       width: 100%;
-      height: 450px;
+      height: 480px;
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 0.75rem;
       font-family: monospace;
       outline: none;
+      font-size: 0.9rem;
     }
 
+    /* 手機螢幕調適 */
     @media (max-width: 768px) {
       aside {
         position: fixed;
         top: 0; bottom: 0; left: 0;
-        width: 82%;
-        max-width: 320px;
+        width: 84%;
+        max-width: 330px;
         transform: translateX(-100%);
         box-shadow: 2px 0 12px rgba(0,0,0,0.15);
       }
-      aside.open { transform: translateX(0); }
-      .close-sidebar-btn { display: block; }
-      .menu-toggle-btn { display: block; }
+      aside.open { transform: translateX(0); width: 84% !important; }
       .main-header { padding: 0.65rem 0.85rem; }
-      .main-header h1 { font-size: 1rem; }
       .main-body { padding: 0.5rem; }
-      .content-card { padding: 10px; border-radius: 6px; }
-      .btn { padding: 0.35rem 0.55rem; font-size: 0.75rem; }
+      .content-card { padding: 12px; }
     }
   </style>
 </head>
 <body>
 
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <!-- 手機遮罩 -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
+  <!-- 左側選單 -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <div>
         <h2>🎒 背包客英文</h2>
-        <div class="db-status">● 支援縮放與完全清空</div>
+        <div class="db-status">● 樹狀資料夾與全功能學習庫</div>
       </div>
-      <button class="close-sidebar-btn" onclick="closeSidebar()" title="關閉選單">✕</button>
+      <div class="sidebar-btn-group">
+        <button class="icon-btn" onclick="toggleSidebar()" title="收起選單">◀ 收起</button>
+      </div>
     </div>
     
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="搜尋項目..." oninput="filterFiles()">
+      <input type="text" id="searchInput" placeholder="搜尋講義、影片、單字..." oninput="renderTree()">
     </div>
 
-    <div class="file-list" id="fileList"></div>
+    <!-- 樹狀清單容器 -->
+    <div class="tree-container" id="treeContainer"></div>
 
+    <!-- 底部功能動作欄 -->
     <div class="sidebar-actions">
-      <label class="upload-btn-label">
-        <span>➕ 上傳檔案 (Word/PDF/MP3/MP4)</span>
+      <div class="action-row">
+        <button class="btn-action" onclick="createFolderPrompt()">📁 新增資料夾</button>
+        <button class="btn-action" onclick="addYouTubePrompt()">🔗 嵌入 YouTube</button>
+      </div>
+      <label class="btn-action btn-primary-action">
+        <span>➕ 上傳教材 (Word/PDF/MP3/MP4)</span>
         <input type="file" id="fileInput" accept=".docx,.pdf,.txt,.md,.mp3,.wav,.m4a,.mp4,.webm" multiple style="display:none" onchange="handleFileUpload(event)">
       </label>
-      <button class="add-yt-btn" onclick="addYouTubeLink()">🔗 嵌入 YouTube 影片</button>
     </div>
   </aside>
 
+  <!-- 主閱讀區 -->
   <main>
     <header class="main-header">
       <div class="header-left">
-        <button class="menu-toggle-btn" onclick="openSidebar()" title="開啟選單">☰</button>
+        <button class="toggle-sidebar-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="切換選單顯示/收起">☰</button>
         <h1 id="currentDocTitle">載入中...</h1>
       </div>
-      <div class="action-controls">
-        <button class="btn" onclick="toggleEditMode()" id="editToggleBtn">✏️ 編輯</button>
-        <button class="btn btn-primary" onclick="exportData()">💾 備份</button>
+      <div style="display:flex; gap:0.4rem;">
+        <button class="icon-btn" onclick="toggleEditMode()" id="editToggleBtn">✏️ 編輯內容</button>
+        <button class="icon-btn" onclick="exportData()">💾 備份</button>
+        <button class="icon-btn" onclick="importDataPrompt()">📥 還原</button>
       </div>
     </header>
 
@@ -379,61 +460,71 @@
   </main>
 
   <script>
-    const DB_NAME = 'BackpackersCleanDB_v3';
-    const STORE_NAME = 'documents';
+    const DB_NAME = 'BackpackersFullTreeDB_v1';
+    const STORE_DOCS = 'documents';
+    const STORE_FOLDERS = 'folders';
     let db;
-    let documents = [];
+    let folders = []; // { id, name, collapsed: boolean }
+    let documents = []; // { id, folderId, title, date, content }
     let currentDocId = null;
     let isEditing = false;
 
-    function openSidebar() {
-      document.getElementById('sidebar').classList.add('open');
-      document.getElementById('sidebarOverlay').classList.add('active');
-    }
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('sidebarOverlay').classList.remove('active');
+    // 左側選單收放邏輯 (電腦版直接縮為寬度0，手機版滑動抽屜)
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+      } else {
+        sidebar.classList.toggle('collapsed');
+      }
     }
 
     function openDatabase() {
       return new Promise((resolve, reject) => {
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = (e) => {
-          const dbInstance = e.target.result;
-          if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
-            dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          const inst = e.target.result;
+          if (!inst.objectStoreNames.contains(STORE_DOCS)) {
+            inst.createObjectStore(STORE_DOCS, { keyPath: 'id' });
+          }
+          if (!inst.objectStoreNames.contains(STORE_FOLDERS)) {
+            inst.createObjectStore(STORE_FOLDERS, { keyPath: 'id' });
           }
         };
         req.onsuccess = (e) => {
           db = e.target.result;
           resolve(db);
         };
-        req.onerror = (e) => reject(e);
+        req.onerror = e => reject(e);
       });
     }
 
-    function getAllDocsFromDB() {
+    function getAllFromStore(storeName) {
       return new Promise((resolve) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
         const req = store.getAll();
         req.onsuccess = () => resolve(req.result || []);
       });
     }
 
-    function saveDocToDB(doc) {
+    function saveToStore(storeName, item) {
       return new Promise((resolve) => {
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        store.put(doc);
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        store.put(item);
         tx.oncomplete = () => resolve();
       });
     }
 
-    function deleteDocFromDB(id) {
+    function deleteFromStore(storeName, id) {
       return new Promise((resolve) => {
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
         store.delete(id);
         tx.oncomplete = () => resolve();
       });
@@ -441,34 +532,43 @@
 
     async function init() {
       await openDatabase();
-      documents = await getAllDocsFromDB();
+      folders = await getAllFromStore(STORE_FOLDERS);
+      documents = await getAllFromStore(STORE_DOCS);
 
-      // 檢查是否初次使用，若初次建立且為空才放入範本；若使用者手動刪除過則保持空白
-      const isUserCleaned = localStorage.getItem('bp_user_cleared_all');
-      if (documents.length === 0 && !isUserCleaned) {
-        const defaultDoc = {
-          id: "doc-syllabus",
-          title: "0-2 教學大綱與總學習指引",
-          date: "2026/09",
+      // 初次載入預設架構範例
+      const hasInit = localStorage.getItem('bp_tree_initialized');
+      if (!hasInit && folders.length === 0 && documents.length === 0) {
+        const f1 = { id: 'f-1', name: '📘 第一單元：出入境與海關', collapsed: false };
+        const f2 = { id: 'f-2', name: '🎧 聽力練習 MP3 專區', collapsed: false };
+        await saveToStore(STORE_FOLDERS, f1);
+        await saveToStore(STORE_FOLDERS, f2);
+        folders = [f1, f2];
+
+        const d1 = {
+          id: 'doc-syllabus',
+          folderId: 'f-1',
+          title: '0-2 課程學習指南與大綱',
+          date: '2026/09',
           content: `
-            <span class="badge">課程資訊</span>
-            <h2>課程名稱：背包客英文 (English for Backpackers)</h2>
-            <p><strong>學分數：</strong> 2 學分 ｜ <strong>授課方式：</strong> 全遠距（可點✕刪除此項目）</p>
-            <hr style="margin:0.8rem 0;">
-            <h3>🎯 評量方式</h3>
+            <span class="badge">課程導讀</span>
+            <h2>背包客英文 - 全功能自學平台</h2>
+            <p><strong>特色：</strong>支援左側隨時收起（大螢幕全寬閱讀）、支援樹狀多層資料夾整理教材、內建英語倍速播放器、支援手機手勢放大縮小。</p>
+            <hr style="margin:1rem 0;">
+            <h3>🎯 學習目標</h3>
             <table>
-              <tr><th>項目</th><th>比重</th><th>時程規定</th></tr>
-              <tr><td>平時成績</td><td>30%</td><td>2026/12/31 前完成</td></tr>
-              <tr><td>期中考試</td><td>30%</td><td>115/11/2 - 115/11/8</td></tr>
-              <tr><td>期末考試</td><td>40%</td><td>116/1/4 - 116/1/10</td></tr>
+              <tr><th>單元</th><th>學習核心</th><th>測驗比重</th></tr>
+              <tr><td>Unit 1</td><td>機場航廈、海關提問應答</td><td>平時 30%</td></tr>
+              <tr><td>Unit 2</td><td>交通接駁、飯店入住與退房</td><td>期中 30%</td></tr>
+              <tr><td>Unit 3</td><td>突發狀況求助、醫療與退稅</td><td>期末 40%</td></tr>
             </table>
           `
         };
-        await saveDocToDB(defaultDoc);
-        documents = [defaultDoc];
+        await saveToStore(STORE_DOCS, d1);
+        documents = [d1];
+        localStorage.setItem('bp_tree_initialized', 'true');
       }
 
-      renderFileList();
+      renderTree();
       if (documents.length > 0) {
         selectDocument(documents[0].id);
       } else {
@@ -476,57 +576,97 @@
       }
     }
 
-    function renderFileList(filter = '') {
-      const container = document.getElementById('fileList');
+    // 渲染樹狀清單（含資料夾展開/收合與檔案清單）
+    function renderTree() {
+      const container = document.getElementById('treeContainer');
       container.innerHTML = '';
-      const filtered = documents.filter(doc => 
-        doc.title.toLowerCase().includes(filter.toLowerCase()) ||
-        doc.content.toLowerCase().includes(filter.toLowerCase())
-      );
+      const filter = document.getElementById('searchInput').value.trim().toLowerCase();
 
-      if (filtered.length === 0) {
-        container.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem; text-align:center; padding:1.5rem 0;">目前無任何檔案</p>';
-        return;
-      }
-
-      filtered.forEach(doc => {
-        const item = document.createElement('div');
-        item.className = `file-item ${doc.id === currentDocId ? 'active' : ''}`;
+      // 先渲染各資料夾
+      folders.forEach(folder => {
+        const folderDocs = documents.filter(d => d.folderId === folder.id && (d.title.toLowerCase().includes(filter) || d.content.toLowerCase().includes(filter)));
         
-        item.onclick = () => {
-          selectDocument(doc.id);
-          closeSidebar();
-        };
+        // 若搜尋時此資料夾無結果且資料夾名也不符，則隱藏
+        if (filter && folderDocs.length === 0 && !folder.name.toLowerCase().includes(filter)) {
+          return;
+        }
 
-        const fileInfo = document.createElement('div');
-        fileInfo.className = 'file-info';
-        fileInfo.innerHTML = `
-          <div class="file-title">${escapeHtml(doc.title)}</div>
-          <div class="file-meta">${doc.date || '教材文件'}</div>
+        const block = document.createElement('div');
+        block.className = 'folder-block';
+
+        const header = document.createElement('div');
+        header.className = 'folder-header';
+        header.innerHTML = `
+          <div class="folder-left">
+            <span class="folder-arrow">${folder.collapsed ? '▶' : '▼'}</span>
+            <span style="color:var(--folder-color);">📁</span>
+            <span class="folder-title">${escapeHtml(folder.name)}</span>
+          </div>
+          <button class="del-btn" title="刪除此資料夾" onclick="deleteFolder('${folder.id}', event)">✕</button>
         `;
 
-        const delBtn = document.createElement('button');
-        delBtn.className = 'btn-delete';
-        delBtn.innerHTML = '✕';
-        delBtn.title = '刪除此項目';
-        
-        delBtn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          deleteDocument(doc.id);
+        header.onclick = (e) => {
+          if (e.target.closest('.del-btn')) return;
+          folder.collapsed = !folder.collapsed;
+          saveToStore(STORE_FOLDERS, folder);
+          renderTree();
         };
 
-        item.appendChild(fileInfo);
-        item.appendChild(delBtn);
-        container.appendChild(item);
+        const itemsBox = document.createElement('div');
+        itemsBox.className = `folder-items ${folder.collapsed ? 'hidden' : ''}`;
+
+        if (folderDocs.length === 0) {
+          itemsBox.innerHTML = '<div style="font-size:0.75rem; color:#94a3b8; padding:0.25rem 0.5rem;">(資料夾為空)</div>';
+        } else {
+          folderDocs.forEach(doc => {
+            const item = createDocElement(doc);
+            itemsBox.appendChild(item);
+          });
+        }
+
+        block.appendChild(header);
+        block.appendChild(itemsBox);
+        container.appendChild(block);
       });
+
+      // 渲染未分類檔案 (Root Files)
+      const rootDocs = documents.filter(d => !d.folderId && (d.title.toLowerCase().includes(filter) || d.content.toLowerCase().includes(filter)));
+      if (rootDocs.length > 0) {
+        const rootBlock = document.createElement('div');
+        rootBlock.className = 'folder-block';
+        rootBlock.innerHTML = `<div style="font-size:0.75rem; color:#64748b; font-weight:700; margin:0.4rem 0.2rem;">📄 未分類項目</div>`;
+        rootDocs.forEach(doc => {
+          rootBlock.appendChild(createDocElement(doc));
+        });
+        container.appendChild(rootBlock);
+      }
+
+      if (folders.length === 0 && documents.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.82rem; padding:2rem 0;">目前無任何資料夾或檔案</div>';
+      }
+    }
+
+    function createDocElement(doc) {
+      const item = document.createElement('div');
+      item.className = `file-item ${doc.id === currentDocId ? 'active' : ''}`;
+      item.innerHTML = `
+        <span class="file-title-text">${escapeHtml(doc.title)}</span>
+        <button class="del-btn" title="刪除檔案" onclick="deleteDocument('${doc.id}', event)">✕</button>
+      `;
+      item.onclick = (e) => {
+        if (e.target.closest('.del-btn')) return;
+        selectDocument(doc.id);
+        if (window.innerWidth <= 768) toggleSidebar();
+      };
+      return item;
     }
 
     function selectDocument(id) {
       currentDocId = id;
       isEditing = false;
-      document.getElementById('editToggleBtn').innerText = '✏️ 編輯';
-      renderFileList(document.getElementById('searchInput').value);
+      document.getElementById('editToggleBtn').innerText = '✏️ 編輯內容';
+      renderTree();
+
       const doc = documents.find(d => d.id === id);
       if (!doc) return;
       document.getElementById('currentDocTitle').innerText = doc.title;
@@ -539,37 +679,96 @@
       document.getElementById('contentCard').innerHTML = `
         <div style="text-align:center; padding:4rem 1rem; color:#94a3b8;">
           <div style="font-size:3rem; margin-bottom:1rem;">📂</div>
-          <h3 style="color:#64748b; margin-bottom:0.5rem;">目前沒有任何教材</h3>
-          <p style="font-size:0.88rem;">已清空所有項目。請點擊左側「➕ 上傳檔案」添加講義、MP3 或嵌入 YouTube 影片。</p>
+          <h3 style="color:#64748b; margin-bottom:0.5rem;">尚未選擇或建立教材</h3>
+          <p style="font-size:0.88rem;">請從左側點選資料夾，或透過下方按鈕新增資料夾、上傳 Word/PDF/MP3 影音。</p>
         </div>
       `;
     }
 
-    async function deleteDocument(id) {
-      const doc = documents.find(d => d.id === id);
-      const docTitle = doc ? doc.title : '此項目';
-      
-      const confirmed = window.confirm(`確定要刪除「${docTitle}」嗎？`);
-      if (!confirmed) return;
+    // 新增資料夾
+    async function createFolderPrompt() {
+      const name = prompt("請輸入新資料夾名稱（例如：Unit 1 空中英語、歷屆題庫）：");
+      if (!name || !name.trim()) return;
 
-      await deleteDocFromDB(id);
-      documents = documents.filter(d => d.id !== id);
-
-      if (documents.length === 0) {
-        localStorage.setItem('bp_user_cleared_all', 'true');
-        showEmptyView();
-      } else if (currentDocId === id) {
-        selectDocument(documents[0].id);
-      }
-      
-      renderFileList(document.getElementById('searchInput').value);
+      const newFolder = {
+        id: 'f-' + Date.now(),
+        name: name.trim(),
+        collapsed: false
+      };
+      await saveToStore(STORE_FOLDERS, newFolder);
+      folders.push(newFolder);
+      renderTree();
     }
 
+    // 刪除資料夾
+    async function deleteFolder(folderId, event) {
+      event.stopPropagation();
+      const folder = folders.find(f => f.id === folderId);
+      if (!folder) return;
+
+      const confirmDel = confirm(`確定要刪除「${folder.name}」資料夾嗎？\n裡面的檔案將會自動移至「未分類」。`);
+      if (!confirmDel) return;
+
+      // 裡面的檔案移至未分類
+      for (const doc of documents) {
+        if (doc.folderId === folderId) {
+          doc.folderId = null;
+          await saveToStore(STORE_DOCS, doc);
+        }
+      }
+
+      await deleteFromStore(STORE_FOLDERS, folderId);
+      folders = folders.filter(f => f.id !== folderId);
+      renderTree();
+    }
+
+    // 刪除檔案
+    async function deleteDocument(id, event) {
+      if (event) event.stopPropagation();
+      const doc = documents.find(d => d.id === id);
+      if (!doc) return;
+
+      if (!confirm(`確定要刪除「${doc.title}」嗎？`)) return;
+
+      await deleteFromStore(STORE_DOCS, id);
+      documents = documents.filter(d => d.id !== id);
+
+      if (currentDocId === id) {
+        if (documents.length > 0) {
+          selectDocument(documents[0].id);
+        } else {
+          showEmptyView();
+        }
+      }
+      renderTree();
+    }
+
+    // 選擇存放資料夾之輔助清單
+    function pickFolderId() {
+      if (folders.length === 0) return null;
+      let msg = "請選擇存放的資料夾編號：\n0. [不放入資料夾，置於未分類]\n";
+      folders.forEach((f, idx) => {
+        msg += `${idx + 1}. ${f.name}\n`;
+      });
+      const choice = prompt(msg, "1");
+      if (choice === null) return undefined; // 取消
+      const num = parseInt(choice, 10);
+      if (num > 0 && num <= folders.length) {
+        return folders[num - 1].id;
+      }
+      return null;
+    }
+
+    // 上傳檔案處理 (Word / PDF / MP3 / MP4 / Text)
     async function handleFileUpload(event) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
 
-      localStorage.removeItem('bp_user_cleared_all');
+      const targetFolderId = pickFolderId();
+      if (targetFolderId === undefined) {
+        event.target.value = '';
+        return; // 使用者按取消
+      }
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -585,10 +784,17 @@
           generatedContent = `
             <span class="badge">聽力音訊</span>
             <h2>🎧 ${escapeHtml(file.name)}</h2>
-            <div class="media-container">
-              <audio controls controlsList="nodownload">
+            <div class="audio-player-box">
+              <audio id="audio-${newId}" controls controlsList="nodownload">
                 <source src="${base64Audio}" type="${file.type || 'audio/mp3'}">
               </audio>
+              <div class="audio-speed-bar">
+                <span>播放速度：</span>
+                <button class="speed-btn" onclick="setSpeed('audio-${newId}', 0.75, this)">0.75x (聽力訓練)</button>
+                <button class="speed-btn active" onclick="setSpeed('audio-${newId}', 1.0, this)">1.0x (原速)</button>
+                <button class="speed-btn" onclick="setSpeed('audio-${newId}', 1.25, this)">1.25x (倍速)</button>
+                <button class="speed-btn" onclick="setSpeed('audio-${newId}', 1.5, this)">1.5x</button>
+              </div>
             </div>
           `;
         } else if (['mp4', 'webm'].includes(fileExt)) {
@@ -596,8 +802,8 @@
           generatedContent = `
             <span class="badge">教學影片</span>
             <h2>🎬 ${escapeHtml(file.name)}</h2>
-            <div class="media-container">
-              <video controls>
+            <div style="margin:1rem 0; background:#000; border-radius:8px; overflow:hidden;">
+              <video controls style="width:100%; display:block;">
                 <source src="${base64Video}" type="${file.type || 'video/mp4'}">
               </video>
             </div>
@@ -628,24 +834,31 @@
         } else {
           const text = await file.text();
           generatedContent = `
-            <span class="badge">純文字</span>
+            <span class="badge">學習筆記</span>
             <h2>📝 ${escapeHtml(file.name)}</h2>
             <div style="margin-top:1rem; white-space: pre-wrap;">${escapeHtml(text)}</div>
           `;
         }
 
-        const newDoc = { id: newId, title: fileNameNoExt, date: now, content: generatedContent };
-        await saveDocToDB(newDoc);
+        const newDoc = {
+          id: newId,
+          folderId: targetFolderId,
+          title: fileNameNoExt,
+          date: now,
+          content: generatedContent
+        };
+
+        await saveToStore(STORE_DOCS, newDoc);
         documents.push(newDoc);
       }
 
-      renderFileList();
+      renderTree();
       selectDocument(documents[documents.length - 1].id);
-      closeSidebar();
       event.target.value = '';
     }
 
-    async function addYouTubeLink() {
+    // 嵌入 YouTube
+    async function addYouTubePrompt() {
       const url = prompt("請輸入 YouTube 影片網址：");
       if (!url) return;
 
@@ -653,30 +866,46 @@
       const videoId = (match && match[2].length === 11) ? match[2] : null;
 
       if (!videoId) {
-        alert("無法識別此 YouTube 網址！");
+        alert("無法識別此 YouTube 網址！請貼上標準的 YouTube 影片連結。");
         return;
       }
 
-      const title = prompt("請為這支教學影片命名：", "線上教學影片") || "線上教學影片";
-      const newId = 'doc-yt-' + Date.now();
-      const now = new Date().toLocaleDateString('zh-TW');
+      const title = prompt("請為這支教學影片命名：", "線上英文聽力教學") || "線上教學影片";
+      const targetFolderId = pickFolderId();
+      if (targetFolderId === undefined) return;
 
+      const newId = 'doc-yt-' + Date.now();
       const content = `
-        <span class="badge">YouTube 影音</span>
+        <span class="badge">YouTube 英語影音</span>
         <h2>🎬 ${escapeHtml(title)}</h2>
         <div class="yt-iframe-container">
           <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
         </div>
       `;
 
-      const newDoc = { id: newId, title: `🎬 ${title}`, date: now, content };
-      await saveDocToDB(newDoc);
-      documents.push(newDoc);
-      localStorage.removeItem('bp_user_cleared_all');
+      const newDoc = {
+        id: newId,
+        folderId: targetFolderId,
+        title: `🎬 ${title}`,
+        date: new Date().toLocaleDateString('zh-TW'),
+        content
+      };
 
-      renderFileList();
+      await saveToStore(STORE_DOCS, newDoc);
+      documents.push(newDoc);
+      renderTree();
       selectDocument(newId);
-      closeSidebar();
+    }
+
+    // 倍速調整控制
+    function setSpeed(audioId, speed, btn) {
+      const audio = document.getElementById(audioId);
+      if (audio) {
+        audio.playbackRate = speed;
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
     }
 
     function fileToBase64(file) {
@@ -688,6 +917,7 @@
       });
     }
 
+    // 編輯模式
     async function toggleEditMode() {
       const doc = documents.find(d => d.id === currentDocId);
       if (!doc) return;
@@ -696,32 +926,59 @@
 
       if (!isEditing) {
         isEditing = true;
-        btn.innerText = '💾 儲存';
+        btn.innerText = '💾 儲存修改';
         card.innerHTML = `<textarea class="editable-area" id="docEditor">${doc.content}</textarea>`;
       } else {
         isEditing = false;
-        btn.innerText = '✏️ 編輯';
+        btn.innerText = '✏️ 編輯內容';
         const updated = document.getElementById('docEditor').value;
         doc.content = updated;
-        await saveDocToDB(doc);
+        await saveToStore(STORE_DOCS, doc);
         card.innerHTML = updated;
       }
     }
 
-    function filterFiles() {
-      renderFileList(document.getElementById('searchInput').value);
-    }
-
+    // 資料匯出備份
     function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(documents, null, 2));
+      const payload = { folders, documents, exportedAt: new Date().toISOString() };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
       const a = document.createElement('a');
       a.href = dataStr;
-      a.download = `背包客英文_備份_${Date.now()}.json`;
+      a.download = `背包客英文_全站備份_${Date.now()}.json`;
       a.click();
     }
 
-    function escapeHtml(string) {
-      return String(string).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+    // 資料還原
+    function importDataPrompt() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          if (data.folders && data.documents) {
+            for (const f of data.folders) await saveToStore(STORE_FOLDERS, f);
+            for (const d of data.documents) await saveToStore(STORE_DOCS, d);
+            folders = await getAllFromStore(STORE_FOLDERS);
+            documents = await getAllFromStore(STORE_DOCS);
+            renderTree();
+            if (documents.length > 0) selectDocument(documents[0].id);
+            alert("備份資料已成功還原！");
+          } else {
+            alert("檔案格式不相符！");
+          }
+        } catch(err) {
+          alert("還原失敗，請確認檔案為正確的 JSON 備份檔。");
+        }
+      };
+      input.click();
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
     }
 
     window.onload = init;
