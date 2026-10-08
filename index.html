@@ -2,9 +2,8 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>背包客英文 - 期中/期末考題庫與多功能學習平台</title>
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+  <title>背包客英文 - 雲端學習平台</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -12,207 +11,150 @@
       --bg: #f8fafc;
       --sidebar-bg: #ffffff;
       --card-bg: #ffffff;
-      --text-main: #1e293b;
+      --text: #0f172a;
       --text-muted: #64748b;
       --border: #e2e8f0;
-      --danger: #ef4444;
       --success: #10b981;
-      --folder-color: #f59e0b;
-      --correct-bg: #ecfdf5;
-      --correct-border: #10b981;
-      --wrong-bg: #fef2f2;
-      --wrong-border: #ef4444;
+      --danger: #ef4444;
+      --accent: #f59e0b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text-main);
+      background: var(--bg);
+      color: var(--text);
       display: flex;
       height: 100vh;
       overflow: hidden;
-      position: relative;
     }
 
-    .sidebar-overlay {
+    /* 遮罩 (手機端) */
+    .overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      inset: 0;
       background: rgba(0, 0, 0, 0.45);
       z-index: 40;
     }
-    .sidebar-overlay.active { display: block; }
+    .overlay.active { display: block; }
 
+    /* 左側選單 */
     aside {
       width: 320px;
-      background-color: var(--sidebar-bg);
+      background: var(--sidebar-bg);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
       z-index: 50;
-      transition: width 0.25s ease, transform 0.25s ease;
-      overflow: hidden;
-      position: relative;
-    }
-
-    aside.collapsed {
-      width: 0 !important;
-      border-right: none;
+      transition: transform 0.25s ease;
     }
 
     .sidebar-header {
-      padding: 1rem 1.15rem;
+      padding: 1rem 1.1rem;
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      min-width: 320px;
     }
     .sidebar-header h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-size: 1.15rem;
       color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .db-status {
+    .sub-tag {
       font-size: 0.72rem;
       color: var(--success);
-      margin-top: 0.15rem;
+      margin-top: 3px;
     }
 
-    .sidebar-btn-group {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-    .icon-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 0.82rem;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
-    .icon-btn:hover { background: #f1f5f9; color: var(--text-main); }
-
-    .search-box {
-      padding: 0.65rem 1rem;
-      border-bottom: 1px solid var(--border);
-      min-width: 320px;
-    }
-    .search-box input {
-      width: 100%;
-      padding: 0.45rem 0.65rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    .tree-container {
+    .tree-box {
       flex: 1;
       overflow-y: auto;
-      padding: 0.5rem 0.6rem;
-      min-width: 320px;
+      padding: 0.6rem;
     }
 
-    .folder-block { margin-bottom: 0.4rem; }
-    .folder-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.45rem 0.6rem;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #f8fafc;
+    .folder-group { margin-bottom: 0.6rem; }
+    .folder-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.5rem 0.65rem;
+      background: #f1f5f9;
       border: 1px solid var(--border);
+      border-radius: 6px;
       font-size: 0.85rem;
-      font-weight: 600;
-      user-select: none;
-    }
-    .folder-header:hover { background: #f1f5f9; }
-    .folder-left {
+      font-weight: 700;
+      cursor: pointer;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.4rem;
-      overflow: hidden;
+      color: #334155;
     }
-    .folder-arrow {
-      font-size: 0.7rem;
-      width: 14px;
-      display: inline-block;
-      color: var(--text-muted);
-    }
-    .folder-title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .folder-items {
-      padding-left: 1rem;
-      margin-top: 0.25rem;
+    .folder-btn:hover { background: #e2e8f0; }
+
+    .unit-list {
+      padding-left: 0.5rem;
+      margin-top: 0.3rem;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 3px;
     }
-    .folder-items.hidden { display: none; }
+    .unit-list.collapsed { display: none; }
 
-    .file-item {
+    .nav-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 6px;
       padding: 0.45rem 0.6rem;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #fff;
-      border: 1px solid var(--border);
-      transition: background 0.15s;
-    }
-    .file-item:hover { background-color: #f1f5f9; }
-    .file-item.active { background-color: #eff6ff; border-color: #bfdbfe; font-weight: 600; }
-    .file-title-text {
       font-size: 0.82rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
+      color: #475569;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-decoration: none;
     }
+    .nav-item:hover { background: #f1f5f9; color: var(--text); }
+    .nav-item.active { background: #eff6ff; color: var(--primary); font-weight: 600; border-color: #bfdbfe; }
+    .nav-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+    /* 右側主內容區 */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      width: 100%;
+      background: var(--bg);
     }
-    .main-header {
+
+    .top-bar {
       padding: 0.75rem 1.25rem;
       background: #fff;
       border-bottom: 1px solid var(--border);
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 0.5rem;
     }
-    .header-left {
+    .top-left {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.75rem;
       overflow: hidden;
     }
-    .toggle-sidebar-btn {
+    .menu-btn {
+      display: none;
       background: #fff;
       border: 1px solid var(--border);
       padding: 0.35rem 0.6rem;
       border-radius: 6px;
-      font-size: 1rem;
+      font-size: 1.1rem;
       cursor: pointer;
     }
-    .toggle-sidebar-btn:hover { background: #f1f5f9; }
-    .main-header h1 {
+    .top-title {
       font-size: 1.1rem;
       font-weight: 700;
       white-space: nowrap;
@@ -220,433 +162,719 @@
       text-overflow: ellipsis;
     }
 
-    .main-body {
+    .share-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .share-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    /* 全局常駐音訊控制列 */
+    .player-dock {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0.6rem 1.25rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .now-playing {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    audio {
+      height: 36px;
+      flex: 1;
+      min-width: 250px;
+      outline: none;
+    }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ctrl-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .ctrl-btn:hover { background: #f1f5f9; }
+
+    .main-scroll {
       flex: 1;
       overflow-y: auto;
       padding: 1.25rem;
       -webkit-overflow-scrolling: touch;
     }
-
     .content-card {
       background: var(--card-bg);
-      border-radius: 8px;
       border: 1px solid var(--border);
-      min-height: 100%;
-      line-height: 1.7;
-      max-width: 1000px;
+      border-radius: 8px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 24px;
-      box-sizing: border-box;
+      min-height: 80%;
     }
 
-    /* 題庫特定樣式 */
-    .unit-title-box {
-      border-bottom: 2px solid var(--primary);
-      padding-bottom: 0.6rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .unit-title-box h2 {
-      font-size: 1.3rem;
-      color: var(--primary);
-    }
-    .question-block {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem 1.2rem;
-      margin-bottom: 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    /* 題庫組件 */
+    .q-box {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.2rem;
+      margin-bottom: 1.2rem;
     }
     .q-text {
       font-size: 1rem;
       font-weight: 600;
-      color: #0f172a;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.75rem;
       line-height: 1.6;
     }
-    .options-grid {
+    .opt-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.5rem;
-      margin-bottom: 0.8rem;
+      gap: 0.45rem;
     }
     .opt-btn {
       text-align: left;
-      padding: 0.55rem 0.8rem;
-      background: #f8fafc;
+      padding: 0.55rem 0.85rem;
       border: 1px solid var(--border);
+      background: #f8fafc;
       border-radius: 6px;
       font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.15s;
     }
-    .opt-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-    .opt-btn.correct { background: var(--correct-bg); border-color: var(--correct-border); color: #065f46; font-weight: 600; }
-    .opt-btn.wrong { background: var(--wrong-bg); border-color: var(--wrong-border); color: #991b1b; }
-
+    .opt-btn:hover { background: #f1f5f9; }
+    .opt-btn.correct { background: #ecfdf5; border-color: var(--success); color: #065f46; font-weight: 700; }
+    .opt-btn.wrong { background: #fef2f2; border-color: var(--danger); color: #991b1b; }
     .ans-box {
       margin-top: 0.6rem;
-      padding: 0.6rem 0.8rem;
+      padding: 0.65rem 0.85rem;
       background: #f0fdf4;
       border-left: 4px solid var(--success);
       border-radius: 4px;
       font-size: 0.88rem;
     }
     .ans-box.hidden { display: none; }
-    .ans-title {
-      font-weight: 700;
-      color: #166534;
-      margin-bottom: 0.2rem;
+
+    /* 影音嵌入容器 */
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-top: 1rem;
     }
-    .ans-explain {
-      color: #15803d;
-      line-height: 1.5;
+    .video-container iframe {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      border: none;
     }
+
+    /* 上傳框樣式 */
+    .upload-zone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+    }
+    .upload-zone:hover { border-color: var(--primary); background: #f0f7ff; }
 
     @media (max-width: 768px) {
       aside {
         position: fixed;
         top: 0; bottom: 0; left: 0;
-        width: 84%;
-        max-width: 320px;
+        width: 80%;
+        max-width: 300px;
         transform: translateX(-100%);
-        box-shadow: 2px 0 12px rgba(0,0,0,0.15);
       }
-      aside.open { transform: translateX(0); width: 84% !important; }
-      .main-header { padding: 0.65rem 0.85rem; }
-      .main-body { padding: 0.5rem; }
-      .content-card { padding: 14px; }
-      .options-grid { grid-template-columns: 1fr; }
+      aside.open { transform: translateX(0); }
+      .menu-btn { display: block; }
+      .player-dock { padding: 0.5rem 0.75rem; }
+      .now-playing { width: 100%; margin-bottom: 2px; }
+      .main-scroll { padding: 0.75rem; }
+      .content-card { padding: 15px; }
     }
   </style>
 </head>
 <body>
 
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="overlay" id="overlay" onclick="toggleNav()"></div>
 
+  <!-- 左側導覽列 -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <div>
         <h2>🎒 背包客英文</h2>
-        <div class="db-status">● 期中與期末 160 題完整題庫</div>
+        <div class="sub-tag">● 雲端整合學習系統</div>
       </div>
-      <div class="sidebar-btn-group">
-        <button class="icon-btn" onclick="toggleSidebar()" title="收起選單">◀</button>
-      </div>
+      <button class="menu-btn" onclick="toggleNav()" style="display:block;">✕</button>
     </div>
     
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="搜尋題目、單元或關鍵字..." oninput="renderTree()">
-    </div>
+    <div class="tree-box">
+      <!-- MP3 音檔清單 -->
+      <div class="folder-group">
+        <button class="folder-btn" onclick="toggleFolder('folder-audio')">
+          <span>🎧 課文語音 MP3 (Track 01-30)</span>
+          <span id="arr-folder-audio">▼</span>
+        </button>
+        <div class="unit-list" id="folder-audio"></div>
+      </div>
 
-    <div class="tree-container" id="treeContainer"></div>
+      <!-- 期中考題庫 -->
+      <div class="folder-group">
+        <button class="folder-btn" onclick="toggleFolder('folder-mid')">
+          <span>📘 期中考題庫 (Unit 1 ~ 8)</span>
+          <span id="arr-folder-mid">▼</span>
+        </button>
+        <div class="unit-list" id="folder-mid"></div>
+      </div>
+
+      <!-- 期末考題庫 -->
+      <div class="folder-group">
+        <button class="folder-btn" onclick="toggleFolder('folder-fin')">
+          <span>📕 期末考題庫 (Unit 9 ~ 16)</span>
+          <span id="arr-folder-fin">▼</span>
+        </button>
+        <div class="unit-list" id="folder-fin"></div>
+      </div>
+
+      <!-- 影音串流專區 -->
+      <div class="folder-group">
+        <button class="folder-btn" onclick="toggleFolder('folder-video')">
+          <span>📺 影音專區 (YouTube 頻道串聯)</span>
+          <span id="arr-folder-video">▼</span>
+        </button>
+        <div class="unit-list" id="folder-video">
+          <div class="nav-item" onclick="loadVideoView('V01 情感分析與文字任務', 'https://www.youtube.com/embed/dQw4w9WgXcQ')">
+            <span>🎬 歷屆解題與聽力解析</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 檔案自傳分享專區 -->
+      <div class="folder-group">
+        <button class="folder-btn" onclick="toggleFolder('folder-tools')">
+          <span>📁 自訂音檔/講義分享</span>
+          <span id="arr-folder-tools">▼</span>
+        </button>
+        <div class="unit-list" id="folder-tools">
+          <div class="nav-item" onclick="loadUploadView()">
+            <span>📤 本機上傳與暫存播放</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </aside>
 
+  <!-- 右側主要區塊 -->
   <main>
-    <header class="main-header">
-      <div class="header-left">
-        <button class="toggle-sidebar-btn" onclick="toggleSidebar()" title="切換選單">☰</button>
-        <h1 id="currentTitle">載入題庫中...</h1>
+    <header class="top-bar">
+      <div class="top-left">
+        <button class="menu-btn" onclick="toggleNav()">☰</button>
+        <div class="top-title" id="pageTitle">載入中...</div>
       </div>
-      <div style="display:flex; gap:0.4rem;">
-        <button class="icon-btn" onclick="toggleAllAnswers()">👁️ 顯示/隱藏全解答</button>
-      </div>
+      <button class="share-btn" onclick="copyShareUrl()">🔗 複製單元分享連結</button>
     </header>
 
-    <div class="main-body">
-      <div class="content-card" id="contentCard"></div>
+    <!-- 頂部音訊控制台 (支援自動下一首與倍速) -->
+    <div class="player-dock">
+      <div class="now-playing" id="trackName">未播放音訊</div>
+      <audio id="mainAudio" controls preload="metadata"></audio>
+      <div class="player-controls">
+        <button class="ctrl-btn" onclick="changeSpeed(0.75)">0.75x</button>
+        <button class="ctrl-btn" onclick="changeSpeed(1.0)">1.0x</button>
+        <button class="ctrl-btn" onclick="changeSpeed(1.25)">1.25x</button>
+        <button class="ctrl-btn" onclick="playNextTrack()">⏭️ 下一首</button>
+      </div>
+    </div>
+
+    <!-- 內容滾動區 -->
+    <div class="main-scroll">
+      <div class="content-card" id="mainCard"></div>
     </div>
   </main>
 
   <script>
-    // 16 個 Unit 完整題庫資料庫
+    // 1. MP3 播放清單（對應 GitHub 已上傳的檔案）
+    const AUDIO_TRACKS = [];
+    for (let i = 1; i <= 30; i++) {
+      const pad = String(i).padStart(2, '0');
+      AUDIO_TRACKS.push({
+        id: `track-${pad}`,
+        title: `Travel Beyond 1_Track ${pad}.mp3`,
+        url: `Travel%20Beyond%201_Track%20${pad}.mp3`
+      });
+    }
+
+    let currentTrackIdx = 0;
+    const audioEl = document.getElementById('mainAudio');
+
+    // 2. 考題資料庫 (Unit 1 ~ 16)
     const QUIZ_DATA = {
-      midterm: {
-        folder: "📘 背包客英文 - 期中考題庫 (Unit 1 ~ 8)",
-        units: [
-          {
-            id: "m-u1", title: "Unit Test 1 Taking a Vacation",
-            questions: [
-              { q: "1. There are two ______ languages in Canada: English and French.", opts: ["A. amazing", "B. official", "C. attractive", "D. scorching"], ans: "B", exp: "加拿大的兩種「官方語言」是英文和法文，所以要用 official。" },
-              { q: "2. If you don't have much time to do research, why don't you join a ______ for this vacation?", opts: ["A. site", "B. pyramid", "C. team", "D. tour"], ans: "D", exp: "join a tour = 參加旅行團，語法和語意都正確。" },
-              { q: "3. Joe has been ______ by Egyptian history. He wants to visit Egypt.", opts: ["A. fascinated", "B. amazing", "C. interested", "D. guessed"], ans: "A", exp: "be fascinated by = 被……吸引。Joe 被埃及歷史吸引，最符合文意。" },
-              { q: "4. She needs to ______ this paper to show that she agrees with it.", opts: ["A. join", "B. catch", "C. sign", "D. visit"], ans: "C", exp: "簽署文件 sign a paper = 表示同意。" },
-              { q: "5. Madrid is the ______ city of Spain.", opts: ["A. capital", "B. official", "C. themed", "D. outdoor"], ans: "A", exp: "capital city = 首都，馬德里是西班牙首都。" },
-              { q: "6. College students have a one-week spring ______ this year in April.", opts: ["A. destination", "B. station", "C. bank", "D. break"], ans: "D", exp: "spring break = 春假，是固定用法。" },
-              { q: "7. The family is going to ______ a vacation next month.", opts: ["A. get on", "B. go on", "C. go to", "D. due to"], ans: "B", exp: "go on a vacation = 去度假。" },
-              { q: "8. I've always wanted to ______ the Sahara. It is my dream.", opts: ["A. visit", "B. go", "C. take", "D. get"], ans: "A", exp: "visit + 地名 = 造訪某地。" },
-              { q: "9. They went to the Great Barrier Reef and did ______ there. That was wonderful.", opts: ["A. hiking", "B. skiing", "C. bungee jumping", "D. snorkeling"], ans: "D", exp: "大堡礁的代表性活動就是 snorkeling (浮潛)。" },
-              { q: "10. I'm ______ of nature. Visiting New Zealand has been my dream.", opts: ["A. found", "B. find", "C. fond", "D. open"], ans: "C", exp: "be fond of = 喜愛……。" }
-            ]
-          },
-          {
-            id: "m-u2", title: "Unit Test 2 Preparing for a Trip",
-            questions: [
-              { q: "1. The battery of our cell phone is low. We need to ______ it soon.", opts: ["A. change", "B. make", "C. charge", "D. pack"], ans: "C", exp: "charge a battery = 給電池充電。" },
-              { q: "2. We'll stay at the beach the whole day. Don't forget to bring your ______.", opts: ["A. padlock", "B. sunscreen", "C. shower gel", "D. toothpaste"], ans: "B", exp: "在海邊一整天要擦防曬乳 (sunscreen)。" },
-              { q: "3. Judy is going to wear ______ from now on. She is tired of glasses.", opts: ["A. contact lenses", "B. combs", "C. electric adaptors", "D. makeup"], ans: "A", exp: "contact lenses = 隱形眼鏡，可取代眼鏡。" },
-              { q: "4. I woke up seeing the sky ______. It looked like a storm was coming.", opts: ["A. drizzling", "B. balmy", "C. scorching", "D. overcast"], ans: "D", exp: "overcast = 陰沉的，暴風雨將至。" },
-              { q: "5. Where's the key to the ______? Now we have trouble opening this closet.", opts: ["A. padlock", "B. medicine", "C. trunks", "D. brush"], ans: "A", exp: "padlock = 掛鎖，鎖櫃子最合理。" },
-              { q: "6. It's ______ outside. I don't think you should go out without your coat.", opts: ["A. drizzling", "B. balmy", "C. foggy", "D. freezing"], ans: "D", exp: "freezing = 冰冷嚴寒，需要穿外套。" },
-              { q: "7. They are good at finding great ______ for their plane tickets and hotels.", opts: ["A. packs", "B. breeze", "C. deals", "D. destinations"], ans: "C", exp: "good deals = 划算的優惠。" },
-              { q: "8. Jack always stays in a bed of a ______ so that he can have roommates and meet new people.", opts: ["A. campsite", "B. hostel", "C. hotel", "D. resort"], ans: "B", exp: "hostel = 青年旅館，常有室友。" },
-              { q: "9. I enjoyed ______ friends. So I joined different clubs when I was studying at university.", opts: ["A. to see", "B. seeing", "C. to make", "D. making"], ans: "D", exp: "enjoy 後接 V-ing，且 make friends = 交朋友。" },
-              { q: "10. It's so ______ in the mountains now. But don't worry, it will clear up later.", opts: ["A. breezy", "B. humid", "C. foggy", "D. snowy"], ans: "C", exp: "山上起霧 (foggy)，符合 clear up (放晴) 的語境。" }
-            ]
-          },
-          {
-            id: "m-u3", title: "Unit Test 3 Advance Bookings",
-            questions: [
-              { q: "1. Their ______ in the campsite has been canceled. They decided to stay in a nearby hotel.", opts: ["A. spot", "B. resort", "C. tour", "D. event"], ans: "A", exp: "a camping spot = 營地位置。" },
-              { q: "2. The ______ tour doesn't sound easy. The forest covers a lot of land so it's quite tiring.", opts: ["A. bus", "B. historical", "C. hiking", "D. departing"], ans: "C", exp: "hiking tour = 健行行程，走很累。" },
-              { q: "3. The hotel she ______ was too expensive that her travel partner was not happy with it.", opts: ["A. took", "B. booked", "C. got", "D. returned"], ans: "B", exp: "book a hotel = 訂旅館。" },
-              { q: "4. She was not able to find a direct flight. So she ______ in Bangkok.", opts: ["A. returned", "B. upgraded", "C. transferred", "D. entered"], ans: "C", exp: "transfer flight = 轉機。" },
-              { q: "5. They didn't have enough ______ to pay. Luckily, the restaurant took credit cards.", opts: ["A. reasons", "B. charge", "C. arrivals", "D. cash"], ans: "D", exp: "現金 (cash) 不足，只能刷信用卡。" },
-              { q: "6. In order to ______ our booking, we should check our e-mail to see if the company send any letters in.", opts: ["A. confirm", "B. reserve", "C. make", "D. exchange"], ans: "A", exp: "confirm a booking = 確認訂位。" },
-              { q: "7. You need a ______ visa if you are sent overseas to fix the machine your company sold.", opts: ["A. work", "B. tourist", "C. business", "D. medical"], ans: "C", exp: "出差工作洽商 = business visa (商務簽證)。" },
-              { q: "8. The hotel offers a free ______ from the airport. You can find it when you come out of the exit.", opts: ["A. travel", "B. visitor", "C. dorm", "D. pickup"], ans: "D", exp: "free pickup = 免費機場接送服務。" },
-              { q: "9. You have to show your boarding ______ when you buy things at the duty-free shops at the airport.", opts: ["A. ticket", "B. pass", "C. paper", "D. test"], ans: "B", exp: "boarding pass = 登機證。" },
-              { q: "10. The table has been ______ for a family of four. Sorry, you cannot sit here.", opts: ["A. done", "B. departed", "C. left", "D. reserved"], ans: "D", exp: "reserved = 已被預訂。" }
-            ]
-          },
-          {
-            id: "m-u4", title: "Unit Test 4 Airport Check-In",
-            questions: [
-              { q: "1. Some airports are so huge that if you go to the wrong ______ you have trouble catching your flight.", opts: ["A. escalator", "B. terminal", "C. cart", "D. walkway"], ans: "B", exp: "terminal = 航廈，走錯航廈會趕不上飛機。" },
-              { q: "2. I need to bring an extra ______ for my cell phone. I'm expecting an important call and can't miss it.", opts: ["A. iPad", "B. sunscreen", "C. wallet", "D. powerbank"], ans: "D", exp: "powerbank = 行動電源。" },
-              { q: "3. You'll need to have your ______ to check in for your flight. Don't forget to keep it with you all the time.", opts: ["A. passbook", "B. passenger", "C. passport", "D. passerby"], ans: "C", exp: "passport = 護照，登機報到必備。" },
-              { q: "4. At ______ people are examined to see if they are carrying something dangerous.", opts: ["A. security check", "B. the exchange kiosk", "C. Immigration", "D. the boarding gate"], ans: "A", exp: "security check = 安檢，檢查危險物品。" },
-              { q: "5. You choose the word ______ if you are taking out some money from the ATM.", opts: ["A. deposit", "B. withdrawal", "C. cash", "D. fee"], ans: "B", exp: "withdrawal = 提款；deposit = 存款。" },
-              { q: "6. The exchange ______ between US dollar and euro is 0.77.", opts: ["A. fare", "B. charge", "C. fee", "D. rate"], ans: "D", exp: "exchange rate = 匯率。" },
-              { q: "7. There are ______ buses between the train station and the airport. You can find them when you walk outside the building.", opts: ["A. shuttle", "B. connecting", "C. transferring", "D. waiting"], ans: "A", exp: "shuttle bus = 接駁巴士。" },
-              { q: "8. Let's ______ the lift to the topmost floor. I hate stairs and my legs are sore already.", opts: ["A. get", "B. take", "C. answer", "D. make"], ans: "B", exp: "take the lift = 搭電梯。" },
-              { q: "9. The ground staff will give you a boarding ______ after you check in.", opts: ["A. paper", "B. ticket", "C. pass", "D. pad"], ans: "C", exp: "boarding pass = 登機證。" },
-              { q: "10. There is always an electronic ______ at the gate showing the information of the next flight.", opts: ["A. visual", "B. signal", "C. band", "D. sign"], ans: "D", exp: "electronic sign = 電子看板。" }
-            ]
-          },
-          {
-            id: "m-u5", title: "Unit Test 5 On Board",
-            questions: [
-              { q: "1. They have ______ on board to make sure all the people are happy with the flight.", opts: ["A. attendants", "B. passengers", "C. customers", "D. airlines"], ans: "A", exp: "flight attendants = 機上空服人員。" },
-              { q: "2. I hope they'll ______ the meal soon. I'm very hungry.", opts: ["A. take", "B. get", "C. serve", "D. reserve"], ans: "C", exp: "serve the meal = 上餐、供餐。" },
-              { q: "3. People are sitting at the waiting area and expecting to ______ the plane soon.", opts: ["A. make", "B. book", "C. sign", "D. board"], ans: "D", exp: "board the plane = 登機。" },
-              { q: "4. You should keep the locations of the emergency ______ in mind when you get on the plane.", opts: ["A. entrances", "B. exits", "C. cuts", "D. cells"], ans: "B", exp: "emergency exits = 緊急逃生出口。" },
-              { q: "5. The ______ is for your TV. There are a lot of buttons on it.", opts: ["A. remote control", "B. seat pocket", "C. compartment", "D. catalog"], ans: "A", exp: "remote control = 遙控器。" },
-              { q: "6. Did you hear any ______? I don't want to miss the flight.", opts: ["A. captain", "B. turbulence", "C. attendance", "D. announcement"], ans: "D", exp: "announcement = 機場/機艙廣播。" },
-              { q: "7. We'd better ______ our seatbelts. The flight can't be nice and smooth all the time.", opts: ["A. cost", "B. fasten", "C. push", "D. find"], ans: "B", exp: "fasten one's seatbelt = 繫上安全帶。" },
-              { q: "8. You should carefully read the safety ______ after you find your seat on the plane.", opts: ["A. supplies", "B. exits", "C. instructions", "D. pockets"], ans: "C", exp: "safety instructions = 安全須知指示。" },
-              { q: "9. The ______ are too full for me to put my luggage in. I'll just put it under the seat in front of me.", opts: ["A. catalogs", "B. trolleys", "C. pillows", "D. compartments"], ans: "D", exp: "overhead compartments = 頭頂行李置物艙。" },
-              { q: "10. The ______ made all the people jump up of their seats. All the passengers were scared.", opts: ["A. turbulence", "B. item", "C. tray", "D. captain"], ans: "A", exp: "turbulence = 亂流。" }
-            ]
-          },
-          {
-            id: "m-u6", title: "Unit Test 6 Going into the Country",
-            questions: [
-              { q: "1. If you are not able to find your check-in luggage, they might ask you to ______ a form.", opts: ["A. go through", "B. get over", "C. fill out", "D. come across"], ans: "C", exp: "fill out a form = 填寫表格。" },
-              { q: "2. The officer asked me to open my bag and ______ my personal belongings.", opts: ["A. looked after", "B. looked through", "C. handed over", "D. handed in"], ans: "B", exp: "look through = 翻看、檢查行李。" },
-              { q: "3. You'd better get your ______ letter ready to show the officer where you are staying.", opts: ["A. form", "B. report", "C. confirmation", "D. appointment"], ans: "C", exp: "confirmation letter = 訂房確認信。" },
-              { q: "4. There are some bus ______ when you walk out of the airport. Try to find bus no. 115.", opts: ["A. terminals", "B. shuttles", "C. tickets", "D. stops"], ans: "D", exp: "bus stops = 公車站牌。" },
-              { q: "5. The ______ at the information center was very helpful.", opts: ["A. attendant", "B. machine", "C. officer", "D. passenger"], ans: "A", exp: "information desk attendant = 服務台人員。" },
-              { q: "6. When you have nothing to ______ try to find green lanes at the customs.", opts: ["A. decide", "B. declare", "C. carry", "D. bring"], ans: "B", exp: "nothing to declare = 海關綠色免申報通道。" },
-              { q: "7. When we are entering the country, we should find non-______ windows to go through.", opts: ["A. laws", "B. suitable", "C. valuables", "D. citizens"], ans: "D", exp: "non-citizens = 非本國公民通道。" },
-              { q: "8. You can always use your ATM card to take out some ______ money if you have enough savings in your account.", opts: ["A. cash", "B. easy", "C. local", "D. careful"], ans: "C", exp: "withdraw local money = 提領當地貨幣。" },
-              { q: "9. I've gotten a great ______ with the new phone plan. The monthly fee is not too high.", opts: ["A. deal", "B. decision", "C. hall", "D. hurry"], ans: "A", exp: "get a great deal = 拿到划算優惠。" },
-              { q: "10. I don't think you can bring food into New Zealand. All of it is not ______.", opts: ["A. possible", "B. declared", "C. deported", "D. allowed"], ans: "D", exp: "not allowed = 不被允許。" }
-            ]
-          },
-          {
-            id: "m-u7", title: "Unit Test 7 Finding the Hotel",
-            questions: [
-              { q: "1. The electric ______ doesn't look the same as the ones in Taiwan. What should we do now?", opts: ["A. sheet", "B. outlet", "C. kettle", "D. heater"], ans: "B", exp: "electric outlet = 電源插座。" },
-              { q: "2. I don't bring valuable things with me when I travel. Even if there is a(n) ______ in the hotel room.", opts: ["A. blanket", "B. safe", "C. towel", "D. air con"], ans: "B", exp: "safe = 保險箱。" },
-              { q: "3. The drinks in the ______ are not free. They will put them on the bill and you have to pay when you check out.", opts: ["A. roll", "B. washroom", "C. lobby", "D. minibar"], ans: "D", exp: "minibar = 飯店房間內的小冰箱（付費飲品）。" },
-              { q: "4. ______ does it take to get to my hotel from here?", opts: ["A. How", "B. How often", "C. How long", "D. When"], ans: "C", exp: "How long does it take... = 詢問需要花費多久時間。" },
-              { q: "5. Which ______ is my room on? Can I take stairs?", opts: ["A. lift", "B. floor", "C. store", "D. hall"], ans: "B", exp: "Which floor... = 詢問位在第幾樓。" },
-              { q: "6. Bus no. 56 can ______ you to the train station. You can then walk to this place.", opts: ["A. make", "B. pass", "C. catch", "D. take"], ans: "D", exp: "take you to... = 載你去某地。" },
-              { q: "7. The bus ______ doesn't give change. So you need to prepare your coins.", opts: ["A. driver", "B. passenger", "C. instructor", "D. doorman"], ans: "A", exp: "bus driver = 公車司機。" },
-              { q: "8. The meal will be served in the ______. You can find it down this way.", opts: ["A. lobby", "B. gym", "C. dining hall", "D. fitness center"], ans: "C", exp: "dining hall = 餐廳、用餐大廳。" },
-              { q: "9. He uses Lin for his booking, not his ______ name Hank.", opts: ["A. last", "B. first", "C. family", "D. full"], ans: "B", exp: "first name = 名字（Hank）；last name / family name = 姓氏（Lin）。" },
-              { q: "10. I'm not too sure about the ______ of the swimming pool. So it might be closed now.", opts: ["A. opening hours", "B. middle range", "C. time section", "D. reception time"], ans: "A", exp: "opening hours = 開放/營業時間。" }
-            ]
-          },
-          {
-            id: "m-u8", title: "Unit Test 8 New Friends",
-            questions: [
-              { q: "1. It is ______ to ask people their age. You can talk about something else.", opts: ["A. nice", "B. kind", "C. rude", "D. cool"], ans: "C", exp: "rude = 無禮的。直接詢問年齡在西方常被視為不禮貌。" },
-              { q: "2. We were very lucky to have ______ weather for our outing.", opts: ["A. chilly", "B. pleasant", "C. overcast", "D. horrible"], ans: "B", exp: "pleasant weather = 宜人舒適的好天氣。" },
-              { q: "3. It's fun to try ______ food and taste some new while traveling.", opts: ["A. local", "B. cheap", "C. expensive", "D. lonely"], ans: "A", exp: "local food = 在地特色美食。" },
-              { q: "4. He has a business ______ in New York. So he visits the city quite often.", opts: ["A. child", "B. parent", "C. pair", "D. partner"], ans: "D", exp: "business partner = 商業夥伴。" },
-              { q: "5. The Italian restaurant around the corner is my ______. I always go there to have dinner.", opts: ["A. favorite", "B. best", "C. quiet", "D. exchange"], ans: "A", exp: "my favorite = 最喜愛的。" },
-              { q: "6. The ______ of hers is Singaporean. She is from Singapore.", opts: ["A. job", "B. hobby", "C. nationality", "D. country"], ans: "C", exp: "nationality = 國籍。" },
-              { q: "7. The language people ______ in Japan is Japanese.", opts: ["A. say", "B. speak", "C. tell", "D. mouth"], ans: "B", exp: "speak + 語言 = 說某種語言。" },
-              { q: "8. You shouldn't ask people how much money they ______. That is very personal.", opts: ["A. take", "B. get", "C. break", "D. make"], ans: "D", exp: "make money = 賺錢。" },
-              { q: "9. I heard it's not safe after ______ in this city. We should return to our hotel soon.", opts: ["A. night", "B. dark", "C. bright", "D. light"], ans: "B", exp: "after dark = 天黑之後。" },
-              { q: "10. I'll ______ three days visiting Paris when I go to France this summer.", opts: ["A. take", "B. make", "C. do", "D. spend"], ans: "D", exp: "spend + 時間 + V-ing = 花費時間做某事。" }
-            ]
-          }
-        ]
-      },
-      final: {
-        folder: "📕 背包客英文 - 期末考題庫 (Unit 9 ~ 16)",
-        units: [
-          {
-            id: "f-u9", title: "Unit Test 9 Daily Life & Food",
-            questions: [
-              { q: "1. I enjoy ______ with my family while eating dinner.", opts: ["A. making", "B. chatting", "C. playing", "D. biking"], ans: "B", exp: "enjoy + V-ing，chatting with family = 和家人聊天。" },
-              { q: "2. She likes cooking and wants to be a(n) ______ at a restaurant someday.", opts: ["A. chef", "B. manager", "C. officer", "D. nurse"], ans: "A", exp: "chef = 主廚。" },
-              { q: "3. Linda is a ______ at a clinic. She answers calls and takes appointments.", opts: ["A. doctor", "B. nurse", "C. cleaner", "D. receptionist"], ans: "D", exp: "receptionist = 診所櫃檯接待人員。" },
-              { q: "4. The National Palace ______ in Taipei is a must-visit in Taiwan. You can't miss it.", opts: ["A. Ocean", "B. Museum", "C. Bubble", "D. City"], ans: "B", exp: "National Palace Museum = 國立故宮博物院。" },
-              { q: "5. ______ is one of the very Taiwanese dishes you can find at the night market.", opts: ["A. Oyster omelet", "B. Pineapple cakes", "C. Sun Moon Lake", "D. Pacific Ocean"], ans: "A", exp: "Oyster omelet = 蚵仔煎。" },
-              { q: "6. The ______ gave me wrong change. I have to go back to the store and talk to them.", opts: ["A. child", "B. chef", "C. cashier", "D. florist"], ans: "C", exp: "cashier = 收銀員；wrong change = 找錯零錢。" },
-              { q: "7. Some office workers buy their breakfast ______ to work. They bring it to their office.", opts: ["A. by the way", "B. on the way", "C. by pass", "D. on pass"], ans: "B", exp: "on the way to work = 上班途中。" },
-              { q: "8. She is a college student. She lives ______ so it's easier to talk with her classmates.", opts: ["A. on campus", "B. off campus", "C. on duty", "D. off duty"], ans: "A", exp: "live on campus = 住在校內宿舍。" },
-              { q: "9. He is an outdoor person. He goes ______ and jogging very often.", opts: ["A. watching movies", "B. grocery shopping", "C. music", "D. hiking"], ans: "D", exp: "hiking = 健行。" },
-              { q: "10. My uncle grows potatoes and corns. He is a ______.", opts: ["A. policeman", "B. musician", "C. farmer", "D. florist"], ans: "C", exp: "farmer = 農夫。" }
-            ]
-          },
-          {
-            id: "f-u10", title: "Unit Test 10 City Tours",
-            questions: [
-              { q: "1. With the city ______ you can visit most of the attractions without paying extra.", opts: ["A. ticket", "B. pass", "C. paper", "D. page"], ans: "B", exp: "city pass = 城市通行套票。" },
-              { q: "2. There is a ______ near the river. Not many people live there.", opts: ["A. village", "B. waterfall", "C. bank", "D. city"], ans: "A", exp: "village = 村莊。" },
-              { q: "3. The ______ at the tour center gave me a lot of information about the tours they have.", opts: ["A. jogger", "B. facility", "C. partner", "D. attendant"], ans: "D", exp: "attendant = 服務人員。" },
-              { q: "4. We don't need to decide now. There are still many companies around and we can look for a good ______.", opts: ["A. answer", "B. solution", "C. deal", "D. response"], ans: "C", exp: "look for a good deal = 尋找優惠好康。" },
-              { q: "5. In order to save money, Wanda took a(n) ______ bus to her next destination.", opts: ["A. shuttle", "B. expensive", "C. dangerous", "D. overnight"], ans: "D", exp: "overnight bus = 夜班長途巴士。" },
-              { q: "6. We'd better take some food with us ______ we're hungry in the afternoon.", opts: ["A. in case", "B. instead of", "C. rather than", "D. because"], ans: "A", exp: "in case = 以防萬一……。" },
-              { q: "7. There are many ______ in this city. Let's go to the very famous dance.", opts: ["A. restaurants", "B. theaters", "C. ponds", "D. forests"], ans: "B", exp: "theaters = 劇院。" },
-              { q: "8. The ______ here is not too difficult to hike. No wonder it's crowded during the weekend.", opts: ["A. river", "B. museum", "C. hill", "D. seat"], ans: "C", exp: "hill = 小山、丘陵。" },
-              { q: "9. I'm not happy with the meal. Let's get some ______ from the street.", opts: ["A. snacks", "B. halls", "C. malls", "D. dances"], ans: "A", exp: "street snacks = 街頭小吃。" },
-              { q: "10. If you go to visit this seaside town, you should try ______. Go under water and see animals in the ocean.", opts: ["A. skiing", "B. snorkeling", "C. boating", "D. sailing"], ans: "B", exp: "snorkeling = 浮潛。" }
-            ]
-          },
-          {
-            id: "f-u11", title: "Unit Test 11 Transportation",
-            questions: [
-              { q: "1. Do not take the wrong ______ when you get out of the subway station. If you do, you'll have to walk a long way to get there.", opts: ["A. entrance", "B. platform", "C. token", "D. exit"], ans: "D", exp: "exit = 地鐵出口。" },
-              { q: "2. This ______ map shows that there are ten stops between these two places.", opts: ["A. route", "B. standard", "C. bike", "D. information"], ans: "A", exp: "route map = 交通路線圖。" },
-              { q: "3. I'd like to find the ticket ______ and buy the ticket before I go to the bathroom.", opts: ["A. plane", "B. booth", "C. entrance", "D. pass"], ans: "B", exp: "ticket booth = 售票亭/櫃台。" },
-              { q: "4. The ______ on the hill was once the palace the king lived. It is a must-visit.", opts: ["A. cannel", "B. wall", "C. aquarium", "D. castle"], ans: "D", exp: "castle = 城堡。" },
-              { q: "5. I enjoyed the art ______ in the city center. The art works there were so amazing.", opts: ["A. shop", "B. store", "C. mall", "D. gallery"], ans: "D", exp: "art gallery = 美術館、藝廊。" },
-              { q: "6. If you want to visit the ______, taking a boat is the only way.", opts: ["A. tower", "B. palace", "C. island", "D. mountain"], ans: "C", exp: "island = 島嶼。" },
-              { q: "7. The ______ is coming. Let's get our tickets ready.", opts: ["A. underpass", "B. conductor", "C. driver", "D. passenger"], ans: "B", exp: "conductor = 列車長/查票員。" },
-              { q: "8. I'd like to know if there are ______ on the train. What if I need to go to the bathroom?", opts: ["A. lavatories", "B. carts", "C. trollies", "D. dorms"], ans: "A", exp: "lavatories = 火車洗手間。" },
-              { q: "9. We'd better hurry up. We need to ______ the nine o'clock train and we don't have much time.", opts: ["A. get", "B. catch", "C. do", "D. let"], ans: "B", exp: "catch the train = 趕上火車。" },
-              { q: "10. How did you ______ when you are traveling? Do you usually take the bus?", opts: ["A. go over", "B. come along", "C. come across", "D. get around"], ans: "D", exp: "get around = 在當地到處走動、代步。" }
-            ]
-          },
-          {
-            id: "f-u12", title: "Unit Test 12 Supermarket Shopping",
-            questions: [
-              { q: "1. One ______ of bread is not enough for all of us. I think we need to buy more.", opts: ["A. bar", "B. loaf", "C. can", "D. stick"], ans: "B", exp: "a loaf of bread = 一條吐司麵包。" },
-              { q: "2. We went to ______ 3 but didn't see any tea bags there.", opts: ["A. harbor", "B. island", "C. aisle", "D. line"], ans: "C", exp: "aisle = 超市貨架走道。" },
-              { q: "3. Since the coffee beans were such a great ______ Heather decided to buy a lot.", opts: ["A. bargain", "B. sale", "C. package", "D. flavor"], ans: "A", exp: "a great bargain = 特價划算商品。" },
-              { q: "4. He bought different kinds of dried ______ in Italy and his friends all love it.", opts: ["A. carton", "B. pasta", "C. carrots", "D. oven"], ans: "B", exp: "dried pasta = 乾燥義大利麵條。" },
-              { q: "5. Do you think the ______ is still working? I feel it's kind of warm.", opts: ["A. stove", "B. kitchen", "C. yogurt", "D. refrigerator"], ans: "D", exp: "refrigerator = 冰箱。" },
-              { q: "6. Korea is famous for its ______. They have over two hundred kinds of it.", opts: ["A. ham", "B. maple syrup", "C. kimchi", "D. bento boxes"], ans: "C", exp: "kimchi = 韓式泡菜。" },
-              { q: "7. Someone left a ______ of milk on the table. There's no name on it.", opts: ["A. bag", "B. carton", "C. piece", "D. roll"], ans: "B", exp: "a carton of milk = 一紙盒裝牛奶。" },
-              { q: "8. If I have a choice, I'd rather eat fresh fruit than have ______ one.", opts: ["A. canned", "B. taken", "C. picked", "D. made"], ans: "A", exp: "canned fruit = 水果罐頭。" },
-              { q: "9. Let's get some ______ pizza from the supermarket. We have a microwave in the public kitchen.", opts: ["A. pasta", "B. bagel", "C. frozen", "D. dozen"], ans: "C", exp: "frozen pizza = 冷凍披薩。" },
-              { q: "10. He finished the whole box of ______ but he is still hungry.", opts: ["A. dairy", "B. fish", "C. beverage", "D. biscuits"], ans: "D", exp: "biscuits = 餅乾。" }
-            ]
-          },
-          {
-            id: "f-u13", title: "Unit Test 13 Shopping & Clothes",
-            questions: [
-              { q: "1. I got a ______ on that pair of pants. That's why they were so cheap.", opts: ["A. sale", "B. discount", "C. sandal", "D. wallet"], ans: "B", exp: "get a discount = 享有折扣。" },
-              { q: "2. These socks are made of ______. They are nice and warm.", opts: ["A. plastic", "B. wood", "C. sweat", "D. wool"], ans: "D", exp: "wool = 羊毛。" },
-              { q: "3. He lost his ______ somewhere. Now he doesn't have money for lunch.", opts: ["A. wallet", "B. pants", "C. boots", "D. socks"], ans: "A", exp: "wallet = 皮夾、錢包。" },
-              { q: "4. Karen went to the ______ to try the skirt on. But it was too small.", opts: ["A. vendor", "B. fitting room", "C. market", "D. suite"], ans: "B", exp: "fitting room = 試衣間。" },
-              { q: "5. You look very ______ in this purple dress. You should take it.", opts: ["A. interesting", "B. colorful", "C. handmade", "D. elegant"], ans: "D", exp: "elegant = 高雅優雅的。" },
-              { q: "6. We can find a(n) ______ store and get some lipsticks as gifts.", opts: ["A. electronic", "B. jewelry", "C. cosmetic", "D. shoe"], ans: "C", exp: "cosmetic store = 美妝店。" },
-              { q: "7. A good pair of ______ will make a huge difference when you go jogging.", opts: ["A. sneakers", "B. sunscreen", "C. perfume", "D. power bank"], ans: "A", exp: "sneakers = 球鞋、慢跑鞋。" },
-              { q: "8. The suit is too ______ for this party. I think a dress is better.", opts: ["A. formal", "B. casual", "C. special", "D. ready"], ans: "A", exp: "formal = 正式的。" },
-              { q: "9. The things you buy on the road are ______. You want to remember the great time.", opts: ["A. sandals", "B. souvenirs", "C. cosmetics", "D. electronics"], ans: "B", exp: "souvenirs = 紀念品。" },
-              { q: "10. This ______ of perfume is more expensive because it has a designer's name on it.", opts: ["A. band", "B. brain", "C. blend", "D. brand"], ans: "D", exp: "brand = 品牌。" }
-            ]
-          },
-          {
-            id: "f-u14", title: "Unit Test 14 Restaurant Dining",
-            questions: [
-              { q: "1. What ______ would you like for your salad, Thousand Island?", opts: ["A. sauce", "B. soup", "C. dressing", "D. dessert"], ans: "C", exp: "salad dressing = 沙拉淋醬。" },
-              { q: "2. There will be four ______ for this dinner: starter, main dish, dessert, and a drink.", opts: ["A. courses", "B. locations", "C. recommendations", "D. locals"], ans: "A", exp: "courses = （西餐套餐的）道數。" },
-              { q: "3. We're fully ______. We don't have a table for you. Sorry.", opts: ["A. cooked", "B. made", "C. read", "D. booked"], ans: "D", exp: "fully booked = 客滿、已被訂滿。" },
-              { q: "4. How much should we ______ the waiter? I think he has been doing a great job tonight.", opts: ["A. tip", "B. take", "C. reserve", "D. serve"], ans: "A", exp: "tip someone = 給某人小費。" },
-              { q: "5. One ______ of fries is not going to be enough for all of us. Let's order two.", opts: ["A. bottle", "B. order", "C. loaf", "D. carton"], ans: "B", exp: "one order of fries = 一份薯條。" },
-              { q: "6. I need some ______ for my steak. It doesn't taste any flavor.", opts: ["A. spring water", "B. dressing", "C. sushi", "D. salt"], ans: "D", exp: "salt = 鹽巴。" },
-              { q: "7. The bill has already included a ten percent ______. Don't worry about it.", opts: ["A. entrance fee", "B. bus fare", "C. service charge", "D. insurance fee"], ans: "C", exp: "service charge = 服務費。" },
-              { q: "8. They have different ______ for their dumplings, such as pork or beef.", opts: ["A. fillings", "B. toppings", "C. peppers", "D. forks"], ans: "A", exp: "fillings = 餃子內餡。" },
-              { q: "9. I need some ______ to clean up the table. It's dirty from the previous customers.", opts: ["A. spoons", "B. napkins", "C. straws", "D. chopsticks"], ans: "B", exp: "napkins = 餐巾紙。" },
-              { q: "10. The breakfast is being ______ from 6:00 to 10:00 in the morning. Please go to the dining hall.", opts: ["A. booked", "B. dressed", "C. served", "D. made"], ans: "C", exp: "breakfast is served = 早餐供應中。" }
-            ]
-          },
-          {
-            id: "f-u15", title: "Unit Test 15 Health & Medical",
-            questions: [
-              { q: "1. You can't buy this medicine without a ______. So you need to go to a doctor first.", opts: ["A. paper", "B. proof", "C. profession", "D. prescription"], ans: "D", exp: "prescription = 醫師處方箋。" },
-              { q: "2. Someone just fell into the deep hole. Help him and call the ______.", opts: ["A. shopkeeper", "B. ambulance", "C. police", "D. florist"], ans: "B", exp: "ambulance = 救護車。" },
-              { q: "3. He was very sick so he went to bed to ______ instead of going to work.", opts: ["A. rest", "B. ache", "C. aid", "D. flu"], ans: "A", exp: "rest = 臥床休息。" },
-              { q: "4. The ______ works very well with the cut. You don't need to worry.", opts: ["A. advice", "B. prescription", "C. painkiller", "D. band-aid"], ans: "D", exp: "band-aid = OK繃。" },
-              { q: "5. He can't stop ______ after eating that big meal. There must be something wrong with the dinner.", opts: ["A. sneezing", "B. runny nose", "C. canceling", "D. throwing up"], ans: "D", exp: "throwing up = 嘔吐。" },
-              { q: "6. The nurse will take your ______ to see if you have a fever.", opts: ["A. medicine", "B. injection", "C. temperature", "D. reception"], ans: "C", exp: "take one's temperature = 量體溫。" },
-              { q: "7. The air is dirty today. I keep coughing and ______.", opts: ["A. sneezing", "B. runny", "C. breathing", "D. aching"], ans: "A", exp: "sneezing = 打噴嚏。" },
-              { q: "8. He's got a new watch on his ______. He's happy with it.", opts: ["A. knee", "B. ankle", "C. neck", "D. wrist"], ans: "D", exp: "wrist = 手腕。" },
-              { q: "9. The doctor asked him to do a medical ______ to see if something serious is going on.", opts: ["A. allergy", "B. test", "C. injection", "D. temperature"], ans: "B", exp: "medical test = 醫療健康檢查。" },
-              { q: "10. Some people go to a(n) ______ rather than a doctor to buy medicine when feeling sick.", opts: ["A. clinic", "B. check point", "C. ambulance", "D. drugstore"], ans: "D", exp: "drugstore = 藥局、藥妝店。" }
-            ]
-          },
-          {
-            id: "f-u16", title: "Unit Test 16 Emergency & Lost Items",
-            questions: [
-              { q: "1. I lost my ______. Luckily, I don't have too much money in it.", opts: ["A. tablet", "B. smartphone", "C. credit card", "D. wallet"], ans: "D", exp: "wallet = 錢包。" },
-              { q: "2. You were robbed? I think you should go to a police station to ______ a report.", opts: ["A. take", "B. file", "C. get", "D. watch"], ans: "B", exp: "file a report = 報案、製作警局筆錄。" },
-              { q: "3. I need to ______ some money from the ATM. Is there one nearby?", opts: ["A. withdraw", "B. do", "C. change", "D. exchange"], ans: "A", exp: "withdraw money = 領錢。" },
-              { q: "4. You have to ______ the form in order to check in to the hotel.", opts: ["A. full of", "B. fill out", "C. fix at", "D. fool around"], ans: "B", exp: "fill out = 填寫表格。" },
-              { q: "5. This yellow ______ looks small, but it can carry a lot. I always use it for my trips.", opts: ["A. form", "B. handle", "C. suitcase", "D. visitor"], ans: "C", exp: "suitcase = 旅行箱、行李箱。" },
-              { q: "6. The most important travel document is your ______. You should keep it in a very safe place.", opts: ["A. check", "B. passport", "C. boarding pass", "D. air ticket"], ans: "B", exp: "passport = 護照。" },
-              { q: "7. The screen of a(n) ______ is much bigger than it of a smartphone. So people usually read an e-book on it.", opts: ["A. charger", "B. earphone", "C. password", "D. tablet"], ans: "D", exp: "tablet = 平板電腦。" },
-              { q: "8. There is always a line at the bottom of the report for you to ______. It shows that you agree with everything on it.", opts: ["A. sign", "B. fill up", "C. withdraw", "D. pass though"], ans: "A", exp: "sign = 簽名。" },
-              { q: "9. The ______ is always changing. So when you need to buy local money, you need to check it.", opts: ["A. entrance fee", "B. bus fare", "C. exchange rate", "D. service charge"], ans: "C", exp: "exchange rate = 匯率。" },
-              { q: "10. If a ______ happens, you should go to a police station to report it.", opts: ["A. robber", "B. robbery", "C. lost and found", "D. loss"], ans: "B", exp: "robbery = 搶劫案件；robber = 強盜（人）。" }
-            ]
-          }
-        ]
-      }
+      midterm: [
+        {
+          id: "u1", title: "Unit Test 1 Taking a Vacation",
+          qs: [
+            { q: "1. There are two ______ languages in Canada: English and French.", o: ["A. amazing", "B. official", "C. attractive", "D. scorching"], a: "B", e: "加拿大的官方語言是英文與法文 (official languages)。" },
+            { q: "2. If you don't have much time to do research, why don't you join a ______ for this vacation?", o: ["A. site", "B. pyramid", "C. team", "D. tour"], a: "D", e: "join a tour = 參加旅行團。" },
+            { q: "3. Joe has been ______ by Egyptian history. He wants to visit Egypt.", o: ["A. fascinated", "B. amazing", "C. interested", "D. guessed"], a: "A", e: "be fascinated by = 被……深深吸引。" },
+            { q: "4. She needs to ______ this paper to show that she agrees with it.", o: ["A. join", "B. catch", "C. sign", "D. visit"], a: "C", e: "sign a paper = 簽署文件。" },
+            { q: "5. Madrid is the ______ city of Spain.", o: ["A. capital", "B. official", "C. themed", "D. outdoor"], a: "A", e: "capital city = 首都。" },
+            { q: "6. College students have a one-week spring ______ this year in April.", o: ["A. destination", "B. station", "C. bank", "D. break"], a: "D", e: "spring break = 春假。" },
+            { q: "7. The family is going to ______ a vacation next month.", o: ["A. get on", "B. go on", "C. go to", "D. due to"], a: "B", e: "go on a vacation = 去度假。" },
+            { q: "8. I've always wanted to ______ the Sahara. It is my dream.", o: ["A. visit", "B. go", "C. take", "D. get"], a: "A", e: "visit 直接接名詞地名。" },
+            { q: "9. They went to the Great Barrier Reef and did ______ there. That was wonderful.", o: ["A. hiking", "B. skiing", "C. bungee jumping", "D. snorkeling"], a: "D", e: "大堡礁必做活動 snorkeling (浮潛)。" },
+            { q: "10. I'm ______ of nature. Visiting New Zealand has been my dream.", o: ["A. found", "B. find", "C. fond", "D. open"], a: "C", e: "be fond of 喜愛……。" }
+          ]
+        },
+        {
+          id: "u2", title: "Unit Test 2 Preparing for a Trip",
+          qs: [
+            { q: "1. The battery of our cell phone is low. We need to ______ it soon.", o: ["A. change", "B. make", "C. charge", "D. pack"], a: "C", e: "charge a battery = 為電池充電。" },
+            { q: "2. We'll stay at the beach the whole day. Don't forget to bring your ______.", o: ["A. padlock", "B. sunscreen", "C. shower gel", "D. toothpaste"], a: "B", e: "sunscreen = 防曬乳。" },
+            { q: "3. Judy is going to wear ______ from now on. She is tired of glasses.", o: ["A. contact lenses", "B. combs", "C. electric adaptors", "D. makeup"], a: "A", e: "contact lenses = 隱形眼鏡。" },
+            { q: "4. I woke up seeing the sky ______. It looked like a storm was coming.", o: ["A. drizzling", "B. balmy", "C. scorching", "D. overcast"], a: "D", e: "overcast = 陰沉的，陰雲密佈的。" },
+            { q: "5. Where's the key to the ______? Now we have trouble opening this closet.", o: ["A. padlock", "B. medicine", "C. trunks", "D. brush"], a: "A", e: "padlock = 掛鎖。" },
+            { q: "6. It's ______ outside. I don't think you should go out without your coat.", o: ["A. drizzling", "B. balmy", "C. foggy", "D. freezing"], a: "D", e: "freezing = 極度寒冷。" },
+            { q: "7. They are good at finding great ______ for their plane tickets and hotels.", o: ["A. packs", "B. breeze", "C. deals", "D. destinations"], a: "C", e: "good deals = 划算的特惠。" },
+            { q: "8. Jack always stays in a bed of a ______ so that he can have roommates and meet new people.", o: ["A. campsite", "B. hostel", "C. hotel", "D. resort"], a: "B", e: "hostel = 青年旅館。" },
+            { q: "9. I enjoyed ______ friends. So I joined different clubs when I was studying at university.", o: ["A. to see", "B. seeing", "C. to make", "D. making"], a: "D", e: "enjoy + V-ing，make friends = 交朋友。" },
+            { q: "10. It's so ______ in the mountains now. But don't worry, it will clear up later.", o: ["A. breezy", "B. humid", "C. foggy", "D. snowy"], a: "C", e: "foggy = 起霧的。" }
+          ]
+        },
+        {
+          id: "u3", title: "Unit Test 3 Advance Bookings",
+          qs: [
+            { q: "1. Their ______ in the campsite has been canceled. They decided to stay in a nearby hotel.", o: ["A. spot", "B. resort", "C. tour", "D. event"], a: "A", e: "a camping spot = 露營營位。" },
+            { q: "2. The ______ tour doesn't sound easy. The forest covers a lot of land so it's quite tiring.", o: ["A. bus", "B. historical", "C. hiking", "D. departing"], a: "C", e: "hiking tour = 健行行程。" },
+            { q: "3. The hotel she ______ was too expensive that her travel partner was not happy with it.", o: ["A. took", "B. booked", "C. got", "D. returned"], a: "B", e: "book a hotel = 訂飯店。" },
+            { q: "4. She was not able to find a direct flight. So she ______ in Bangkok.", o: ["A. returned", "B. upgraded", "C. transferred", "D. entered"], a: "C", e: "transfer = 轉機。" },
+            { q: "5. They didn't have enough ______ to pay. Luckily, the restaurant took credit cards.", o: ["A. reasons", "B. charge", "C. arrivals", "D. cash"], a: "D", e: "cash = 現金。" },
+            { q: "6. In order to ______ our booking, we should check our e-mail to see if the company send any letters in.", o: ["A. confirm", "B. reserve", "C. make", "D. exchange"], a: "A", e: "confirm a booking = 確認預訂。" },
+            { q: "7. You need a ______ visa if you are sent overseas to fix the machine your company sold.", o: ["A. work", "B. tourist", "C. business", "D. medical"], a: "C", e: "business visa = 商務簽證。" },
+            { q: "8. The hotel offers a free ______ from the airport. You can find it when you come out of the exit.", o: ["A. travel", "B. visitor", "C. dorm", "D. pickup"], a: "D", e: "free pickup = 免費機場接送。" },
+            { q: "9. You have to show your boarding ______ when you buy things at the duty-free shops at the airport.", o: ["A. ticket", "B. pass", "C. paper", "D. test"], a: "B", e: "boarding pass = 登機證。" },
+            { q: "10. The table has been ______ for a family of four. Sorry, you cannot sit here.", o: ["A. done", "B. departed", "C. left", "D. reserved"], a: "D", e: "reserved = 已被預留/訂位。" }
+          ]
+        },
+        {
+          id: "u4", title: "Unit Test 4 Airport Check-In",
+          qs: [
+            { q: "1. Some airports are so huge that if you go to the wrong ______ you have trouble catching your flight.", o: ["A. escalator", "B. terminal", "C. cart", "D. walkway"], a: "B", e: "terminal = 航廈。" },
+            { q: "2. I need to bring an extra ______ for my cell phone. I'm expecting an important call and can't miss it.", o: ["A. iPad", "B. sunscreen", "C. wallet", "D. powerbank"], a: "D", e: "powerbank = 行動電源。" },
+            { q: "3. You'll need to have your ______ to check in for your flight. Don't forget to keep it with you all the time.", o: ["A. passbook", "B. passenger", "C. passport", "D. passerby"], a: "C", e: "passport = 護照。" },
+            { q: "4. At ______ people are examined to see if they are carrying something dangerous.", o: ["A. security check", "B. the exchange kiosk", "C. Immigration", "D. the boarding gate"], a: "A", e: "security check = 安檢。" },
+            { q: "5. You choose the word ______ if you are taking out some money from the ATM.", o: ["A. deposit", "B. withdrawal", "C. cash", "D. fee"], a: "B", e: "withdrawal = 提款。" },
+            { q: "6. The exchange ______ between US dollar and euro is 0.77.", o: ["A. fare", "B. charge", "C. fee", "D. rate"], a: "D", e: "exchange rate = 匯率。" },
+            { q: "7. There are ______ buses between the train station and the airport. You can find them when you walk outside the building.", o: ["A. shuttle", "B. connecting", "C. transferring", "D. waiting"], a: "A", e: "shuttle bus = 接駁車。" },
+            { q: "8. Let's ______ the lift to the topmost floor. I hate stairs and my legs are sore already.", o: ["A. get", "B. take", "C. answer", "D. make"], a: "B", e: "take the lift = 搭電梯。" },
+            { q: "9. The ground staff will give you a boarding ______ after you check in.", o: ["A. paper", "B. ticket", "C. pass", "D. pad"], a: "C", e: "boarding pass = 登機證。" },
+            { q: "10. There is always an electronic ______ at the gate showing the information of the next flight.", o: ["A. visual", "B. signal", "C. band", "D. sign"], a: "D", e: "electronic sign = 電子看板。" }
+          ]
+        },
+        {
+          id: "u5", title: "Unit Test 5 On Board",
+          qs: [
+            { q: "1. They have ______ on board to make sure all the people are happy with the flight.", o: ["A. attendants", "B. passengers", "C. customers", "D. airlines"], a: "A", e: "flight attendants = 機艙空服員。" },
+            { q: "2. I hope they'll ______ the meal soon. I'm very hungry.", o: ["A. take", "B. get", "C. serve", "D. reserve"], a: "C", e: "serve the meal = 供應餐點。" },
+            { q: "3. People are sitting at the waiting area and expecting to ______ the plane soon.", o: ["A. make", "B. book", "C. sign", "D. board"], a: "D", e: "board the plane = 登機。" },
+            { q: "4. You should keep the locations of the emergency ______ in mind when you get on the plane.", o: ["A. entrances", "B. exits", "C. cuts", "D. cells"], a: "B", e: "emergency exits = 緊急逃生門。" },
+            { q: "5. The ______ is for your TV. There are a lot of buttons on it.", o: ["A. remote control", "B. seat pocket", "C. compartment", "D. catalog"], a: "A", e: "remote control = 遙控器。" },
+            { q: "6. Did you hear any ______? I don't want to miss the flight.", o: ["A. captain", "B. turbulence", "C. attendance", "D. announcement"], a: "D", e: "announcement = 機場/機艙廣播。" },
+            { q: "7. We'd better ______ our seatbelts. The flight can't be nice and smooth all the time.", o: ["A. cost", "B. fasten", "C. push", "D. find"], a: "B", e: "fasten seatbelt = 繫緊安全帶。" },
+            { q: "8. You should carefully read the safety ______ after you find your seat on the plane.", o: ["A. supplies", "B. exits", "C. instructions", "D. pockets"], a: "C", e: "safety instructions = 安全說明須知。" },
+            { q: "9. The ______ are too full for me to put my luggage in. I'll just put it under the seat in front of me.", o: ["A. catalogs", "B. trolleys", "C. pillows", "D. compartments"], a: "D", e: "overhead compartments = 頭頂行李置物艙。" },
+            { q: "10. The ______ made all the people jump up of their seats. All the passengers were scared.", o: ["A. turbulence", "B. item", "C. tray", "D. captain"], a: "A", e: "turbulence = 亂流。" }
+          ]
+        },
+        {
+          id: "u6", title: "Unit Test 6 Going into the Country",
+          qs: [
+            { q: "1. If you are not able to find your check-in luggage, they might ask you to ______ a form.", o: ["A. go through", "B. get over", "C. fill out", "D. come across"], a: "C", e: "fill out a form = 填寫表格。" },
+            { q: "2. The officer asked me to open my bag and ______ my personal belongings.", o: ["A. looked after", "B. looked through", "C. handed over", "D. handed in"], a: "B", e: "look through = 翻查/檢查隨身行李。" },
+            { q: "3. You'd better get your ______ letter ready to show the officer where you are staying.", o: ["A. form", "B. report", "C. confirmation", "D. appointment"], a: "C", e: "confirmation letter = 訂房確認函。" },
+            { q: "4. There are some bus ______ when you walk out of the airport. Try to find bus no. 115.", o: ["A. terminals", "B. shuttles", "C. tickets", "D. stops"], a: "D", e: "bus stops = 公車站。" },
+            { q: "5. The ______ at the information center was very helpful.", o: ["A. attendant", "B. machine", "C. officer", "D. passenger"], a: "A", e: "attendant = 服務台人員。" },
+            { q: "6. When you have nothing to ______ try to find green lanes at the customs.", o: ["A. decide", "B. declare", "C. carry", "D. bring"], a: "B", e: "nothing to declare = 海關免申報。" },
+            { q: "7. When we are entering the country, we should find non-______ windows to go through.", o: ["A. laws", "B. suitable", "C. valuables", "D. citizens"], a: "D", e: "non-citizens = 非公民通道。" },
+            { q: "8. You can always use your ATM card to take out some ______ money if you have enough savings in your account.", o: ["A. cash", "B. easy", "C. local", "D. careful"], a: "C", e: "local money = 當地貨幣。" },
+            { q: "9. I've gotten a great ______ with the new phone plan. The monthly fee is not too high.", o: ["A. deal", "B. decision", "C. hall", "D. hurry"], a: "A", e: "get a great deal = 取得超值優惠。" },
+            { q: "10. I don't think you can bring food into New Zealand. All of it is not ______.", o: ["A. possible", "B. declared", "C. deported", "D. allowed"], a: "D", e: "not allowed = 不被准許。" }
+          ]
+        },
+        {
+          id: "u7", title: "Unit Test 7 Finding the Hotel",
+          qs: [
+            { q: "1. The electric ______ doesn't look the same as the ones in Taiwan. What should we do now?", o: ["A. sheet", "B. outlet", "C. kettle", "D. heater"], a: "B", e: "electric outlet = 電源插座。" },
+            { q: "2. I don't bring valuable things with me when I travel. Even if there is a(n) ______ in the hotel room.", o: ["A. blanket", "B. safe", "C. towel", "D. air con"], a: "B", e: "safe = 保險箱。" },
+            { q: "3. The drinks in the ______ are not free. They will put them on the bill and you have to pay when you check out.", o: ["A. roll", "B. washroom", "C. lobby", "D. minibar"], a: "D", e: "minibar = 房內付費小冰箱。" },
+            { q: "4. ______ does it take to get to my hotel from here?", o: ["A. How", "B. How often", "C. How long", "D. When"], a: "C", e: "How long does it take = 花費多久時間。" },
+            { q: "5. Which ______ is my room on? Can I take stairs?", o: ["A. lift", "B. floor", "C. store", "D. hall"], a: "B", e: "Which floor = 位於第幾樓。" },
+            { q: "6. Bus no. 56 can ______ you to the train station. You can then walk to this place.", o: ["A. make", "B. pass", "C. catch", "D. take"], a: "D", e: "take you to... = 載你去……。" },
+            { q: "7. The bus ______ doesn't give change. So you need to prepare your coins.", o: ["A. driver", "B. passenger", "C. instructor", "D. doorman"], a: "A", e: "bus driver = 公車司機。" },
+            { q: "8. The meal will be served in the ______. You can find it down this way.", o: ["A. lobby", "B. gym", "C. dining hall", "D. fitness center"], a: "C", e: "dining hall = 用餐大廳。" },
+            { q: "9. He uses Lin for his booking, not his ______ name Hank.", o: ["A. last", "B. first", "C. family", "D. full"], a: "B", e: "first name = 英文名。" },
+            { q: "10. I'm not too sure about the ______ of the swimming pool. So it might be closed now.", o: ["A. opening hours", "B. middle range", "C. time section", "D. reception time"], a: "A", e: "opening hours = 開放/營業時間。" }
+          ]
+        },
+        {
+          id: "u8", title: "Unit Test 8 New Friends",
+          qs: [
+            { q: "1. It is ______ to ask people their age. You can talk about something else.", o: ["A. nice", "B. kind", "C. rude", "D. cool"], a: "C", e: "rude = 不禮貌的。" },
+            { q: "2. We were very lucky to have ______ weather for our outing.", o: ["A. chilly", "B. pleasant", "C. overcast", "D. horrible"], a: "B", e: "pleasant weather = 舒適宜人的天氣。" },
+            { q: "3. It's fun to try ______ food and taste some new while traveling.", o: ["A. local", "B. cheap", "C. expensive", "D. lonely"], a: "A", e: "local food = 當地美食。" },
+            { q: "4. He has a business ______ in New York. So he visits the city quite often.", o: ["A. child", "B. parent", "C. pair", "D. partner"], a: "D", e: "business partner = 商業夥伴。" },
+            { q: "5. The Italian restaurant around the corner is my ______. I always go there to have dinner.", o: ["A. favorite", "B. best", "C. quiet", "D. exchange"], a: "A", e: "favorite = 最喜愛的。" },
+            { q: "6. The ______ of hers is Singaporean. She is from Singapore.", o: ["A. job", "B. hobby", "C. nationality", "D. country"], a: "C", e: "nationality = 國籍。" },
+            { q: "7. The language people ______ in Japan is Japanese.", o: ["A. say", "B. speak", "C. tell", "D. mouth"], a: "B", e: "speak Japanese = 說日語。" },
+            { q: "8. You shouldn't ask people how much money they ______. That is very personal.", o: ["A. take", "B. get", "C. break", "D. make"], a: "D", e: "make money = 賺錢。" },
+            { q: "9. I heard it's not safe after ______ in this city. We should return to our hotel soon.", o: ["A. night", "B. dark", "C. bright", "D. light"], a: "B", e: "after dark = 天黑之後。" },
+            { q: "10. I'll ______ three days visiting Paris when I go to France this summer.", o: ["A. take", "B. make", "C. do", "D. spend"], a: "D", e: "spend + 時間 + V-ing。" }
+          ]
+        }
+      ],
+      final: [
+        {
+          id: "u9", title: "Unit Test 9 Daily Life & Food",
+          qs: [
+            { q: "1. I enjoy ______ with my family while eating dinner.", o: ["A. making", "B. chatting", "C. playing", "D. biking"], a: "B", e: "chatting with family = 和家人聊天。" },
+            { q: "2. She likes cooking and wants to be a(n) ______ at a restaurant someday.", o: ["A. chef", "B. manager", "C. officer", "D. nurse"], a: "A", e: "chef = 主廚。" },
+            { q: "3. Linda is a ______ at a clinic. She answers calls and takes appointments.", o: ["A. doctor", "B. nurse", "C. cleaner", "D. receptionist"], a: "D", e: "receptionist = 診所櫃台人員。" },
+            { q: "4. The National Palace ______ in Taipei is a must-visit in Taiwan.", o: ["A. Ocean", "B. Museum", "C. Bubble", "D. City"], a: "B", e: "National Palace Museum = 故宮博物院。" },
+            { q: "5. ______ is one of the very Taiwanese dishes you can find at the night market.", o: ["A. Oyster omelet", "B. Pineapple cakes", "C. Sun Moon Lake", "D. Pacific Ocean"], a: "A", e: "Oyster omelet = 蚵仔煎。" },
+            { q: "6. The ______ gave me wrong change. I have to go back to the store and talk to them.", o: ["A. child", "B. chef", "C. cashier", "D. florist"], a: "C", e: "cashier = 收銀員。" },
+            { q: "7. Some office workers buy their breakfast ______ to work. They bring it to their office.", o: ["A. by the way", "B. on the way", "C. by pass", "D. on pass"], a: "B", e: "on the way to work = 上班路上。" },
+            { q: "8. She is a college student. She lives ______ so it's easier to talk with her classmates.", o: ["A. on campus", "B. off campus", "C. on duty", "D. off duty"], a: "A", e: "on campus = 住在校園內。" },
+            { q: "9. He is an outdoor person. He goes ______ and jogging very often.", o: ["A. watching movies", "B. grocery shopping", "C. music", "D. hiking"], a: "D", e: "hiking = 健行。" },
+            { q: "10. My uncle grows potatoes and corns. He is a ______.", o: ["A. policeman", "B. musician", "C. farmer", "D. florist"], a: "C", e: "farmer = 農夫。" }
+          ]
+        },
+        {
+          id: "u10", title: "Unit Test 10 City Tours",
+          qs: [
+            { q: "1. With the city ______ you can visit most of the attractions without paying extra.", o: ["A. ticket", "B. pass", "C. paper", "D. page"], a: "B", e: "city pass = 城市通行證。" },
+            { q: "2. There is a ______ near the river. Not many people live there.", o: ["A. village", "B. waterfall", "C. bank", "D. city"], a: "A", e: "village = 村莊。" },
+            { q: "3. The ______ at the tour center gave me a lot of information about the tours they have.", o: ["A. jogger", "B. facility", "C. partner", "D. attendant"], a: "D", e: "attendant = 服務人員。" },
+            { q: "4. We don't need to decide now. There are still many companies around and we can look for a good ______.", o: ["A. answer", "B. solution", "C. deal", "D. response"], a: "C", e: "look for a good deal = 尋找優惠方案。" },
+            { q: "5. In order to save money, Wanda took a(n) ______ bus to her next destination.", o: ["A. shuttle", "B. expensive", "C. dangerous", "D. overnight"], a: "D", e: "overnight bus = 夜行巴士。" },
+            { q: "6. We'd better take some food with us ______ we're hungry in the afternoon.", o: ["A. in case", "B. instead of", "C. rather than", "D. because"], a: "A", e: "in case = 以防萬一……。" },
+            { q: "7. There are many ______ in this city. Let's go to the very famous dance.", o: ["A. restaurants", "B. theaters", "C. ponds", "D. forests"], a: "B", e: "theaters = 劇院。" },
+            { q: "8. The ______ here is not too difficult to hike. No wonder it's crowded during the weekend.", o: ["A. river", "B. museum", "C. hill", "D. seat"], a: "C", e: "hill = 小山。" },
+            { q: "9. I'm not happy with the meal. Let's get some ______ from the street.", o: ["A. snacks", "B. halls", "C. malls", "D. dances"], a: "A", e: "street snacks = 街頭小吃。" },
+            { q: "10. If you go to visit this seaside town, you should try ______. Go under water and see animals in the ocean.", o: ["A. skiing", "B. snorkeling", "C. boating", "D. sailing"], a: "B", e: "snorkeling = 浮潛。" }
+          ]
+        },
+        {
+          id: "u11", title: "Unit Test 11 Transportation",
+          qs: [
+            { q: "1. Do not take the wrong ______ when you get out of the subway station.", o: ["A. entrance", "B. platform", "C. token", "D. exit"], a: "D", e: "exit = 出口。" },
+            { q: "2. This ______ map shows that there are ten stops between these two places.", o: ["A. route", "B. standard", "C. bike", "D. information"], a: "A", e: "route map = 路線圖。" },
+            { q: "3. I'd like to find the ticket ______ and buy the ticket before I go to the bathroom.", o: ["A. plane", "B. booth", "C. entrance", "D. pass"], a: "B", e: "ticket booth = 售票窗口。" },
+            { q: "4. The ______ on the hill was once the palace the king lived. It is a must-visit.", o: ["A. cannel", "B. wall", "C. aquarium", "D. castle"], a: "D", e: "castle = 城堡。" },
+            { q: "5. I enjoyed the art ______ in the city center. The art works there were so amazing.", o: ["A. shop", "B. store", "C. mall", "D. gallery"], a: "D", e: "art gallery = 美術館。" },
+            { q: "6. If you want to visit the ______, taking a boat is the only way.", o: ["A. tower", "B. palace", "C. island", "D. mountain"], a: "C", e: "island = 島嶼。" },
+            { q: "7. The ______ is coming. Let's get our tickets ready.", o: ["A. underpass", "B. conductor", "C. driver", "D. passenger"], a: "B", e: "conductor = 列車長/查票員。" },
+            { q: "8. I'd like to know if there are ______ on the train. What if I need to go to the bathroom?", o: ["A. lavatories", "B. carts", "C. trollies", "D. dorms"], a: "A", e: "lavatories = 車廂洗手間。" },
+            { q: "9. We'd better hurry up. We need to ______ the nine o'clock train and we don't have much time.", o: ["A. get", "B. catch", "C. do", "D. let"], a: "B", e: "catch the train = 趕上火車。" },
+            { q: "10. How did you ______ when you are traveling? Do you usually take the bus?", o: ["A. go over", "B. come along", "C. come across", "D. get around"], a: "D", e: "get around = 各地代步移動。" }
+          ]
+        },
+        {
+          id: "u12", title: "Unit Test 12 Supermarket Shopping",
+          qs: [
+            { q: "1. One ______ of bread is not enough for all of us. I think we need to buy more.", o: ["A. bar", "B. loaf", "C. can", "D. stick"], a: "B", e: "a loaf of bread = 一條吐司。" },
+            { q: "2. We went to ______ 3 but didn't see any tea bags there.", o: ["A. harbor", "B. island", "C. aisle", "D. line"], a: "C", e: "aisle = 賣場走道。" },
+            { q: "3. Since the coffee beans were such a great ______ Heather decided to buy a lot.", o: ["A. bargain", "B. sale", "C. package", "D. flavor"], a: "A", e: "a great bargain = 特價好物。" },
+            { q: "4. He bought different kinds of dried ______ in Italy and his friends all love it.", o: ["A. carton", "B. pasta", "C. carrots", "D. oven"], a: "B", e: "dried pasta = 乾燥義大利麵條。" },
+            { q: "5. Do you think the ______ is still working? I feel it's kind of warm.", o: ["A. stove", "B. kitchen", "C. yogurt", "D. refrigerator"], a: "D", e: "refrigerator = 冰箱。" },
+            { q: "6. Korea is famous for its ______. They have over two hundred kinds of it.", o: ["A. ham", "B. maple syrup", "C. kimchi", "D. bento boxes"], a: "C", e: "kimchi = 泡菜。" },
+            { q: "7. Someone left a ______ of milk on the table. There's no name on it.", o: ["A. bag", "B. carton", "C. piece", "D. roll"], a: "B", e: "a carton of milk = 一紙盒牛奶。" },
+            { q: "8. If I have a choice, I'd rather eat fresh fruit than have ______ one.", o: ["A. canned", "B. taken", "C. picked", "D. made"], a: "A", e: "canned fruit = 罐頭水果。" },
+            { q: "9. Let's get some ______ pizza from the supermarket. We have a microwave in the public kitchen.", o: ["A. pasta", "B. bagel", "C. frozen", "D. dozen"], a: "C", e: "frozen pizza = 冷凍披薩。" },
+            { q: "10. He finished the whole box of ______ but he is still hungry.", o: ["A. dairy", "B. fish", "C. beverage", "D. biscuits"], a: "D", e: "biscuits = 餅乾。" }
+          ]
+        },
+        {
+          id: "u13", title: "Unit Test 13 Shopping & Clothes",
+          qs: [
+            { q: "1. I got a ______ on that pair of pants. That's why they were so cheap.", o: ["A. sale", "B. discount", "C. sandal", "D. wallet"], a: "B", e: "get a discount = 得到折扣。" },
+            { q: "2. These socks are made of ______. They are nice and warm.", o: ["A. plastic", "B. wood", "C. sweat", "D. wool"], a: "D", e: "wool = 羊毛。" },
+            { q: "3. He lost his ______ somewhere. Now he doesn't have money for lunch.", o: ["A. wallet", "B. pants", "C. boots", "D. socks"], a: "A", e: "wallet = 皮夾。" },
+            { q: "4. Karen went to the ______ to try the skirt on. But it was too small.", o: ["A. vendor", "B. fitting room", "C. market", "D. suite"], a: "B", e: "fitting room = 試衣間。" },
+            { q: "5. You look very ______ in this purple dress. You should take it.", o: ["A. interesting", "B. colorful", "C. handmade", "D. elegant"], a: "D", e: "elegant = 高雅的。" },
+            { q: "6. We can find a(n) ______ store and get some lipsticks as gifts.", o: ["A. electronic", "B. jewelry", "C. cosmetic", "D. shoe"], a: "C", e: "cosmetic store = 美妝店。" },
+            { q: "7. A good pair of ______ will make a huge difference when you go jogging.", o: ["A. sneakers", "B. sunscreen", "C. perfume", "D. power bank"], a: "A", e: "sneakers = 慢跑球鞋。" },
+            { q: "8. The suit is too ______ for this party. I think a dress is better.", o: ["A. formal", "B. casual", "C. special", "D. ready"], a: "A", e: "formal = 正式的。" },
+            { q: "9. The things you buy on the road are ______. You want to remember the great time.", o: ["A. sandals", "B. souvenirs", "C. cosmetics", "D. electronics"], a: "B", e: "souvenirs = 紀念品。" },
+            { q: "10. This ______ of perfume is more expensive because it has a designer's name on it.", o: ["A. band", "B. brain", "C. blend", "D. brand"], a: "D", e: "brand = 品牌。" }
+          ]
+        },
+        {
+          id: "u14", title: "Unit Test 14 Restaurant Dining",
+          qs: [
+            { q: "1. What ______ would you like for your salad, Thousand Island?", o: ["A. sauce", "B. soup", "C. dressing", "D. dessert"], a: "C", e: "salad dressing = 沙拉醬。" },
+            { q: "2. There will be four ______ for this dinner: starter, main dish, dessert, and a drink.", o: ["A. courses", "B. locations", "C. recommendations", "D. locals"], a: "A", e: "courses = （西餐）道數。" },
+            { q: "3. We're fully ______. We don't have a table for you. Sorry.", o: ["A. cooked", "B. made", "C. read", "D. booked"], a: "D", e: "fully booked = 客滿。" },
+            { q: "4. How much should we ______ the waiter? I think he has been doing a great job tonight.", o: ["A. tip", "B. take", "C. reserve", "D. serve"], a: "A", e: "tip the waiter = 給服務生小費。" },
+            { q: "5. One ______ of fries is not going to be enough for all of us. Let's order two.", o: ["A. bottle", "B. order", "C. loaf", "D. carton"], a: "B", e: "one order of fries = 一份薯條。" },
+            { q: "6. I need some ______ for my steak. It doesn't taste any flavor.", o: ["A. spring water", "B. dressing", "C. sushi", "D. salt"], a: "D", e: "salt = 鹽巴。" },
+            { q: "7. The bill has already included a ten percent ______. Don't worry about it.", o: ["A. entrance fee", "B. bus fare", "C. service charge", "D. insurance fee"], a: "C", e: "service charge = 服務費。" },
+            { q: "8. They have different ______ for their dumplings, such as pork or beef.", o: ["A. fillings", "B. toppings", "C. peppers", "D. forks"], a: "A", e: "fillings = 餃子餡料。" },
+            { q: "9. I need some ______ to clean up the table. It's dirty from the previous customers.", o: ["A. spoons", "B. napkins", "C. straws", "D. chopsticks"], a: "B", e: "napkins = 餐巾紙。" },
+            { q: "10. The breakfast is being ______ from 6:00 to 10:00 in the morning. Please go to the dining hall.", o: ["A. booked", "B. dressed", "C. served", "D. made"], a: "C", e: "breakfast is served = 早餐供應中。" }
+          ]
+        },
+        {
+          id: "u15", title: "Unit Test 15 Health & Medical",
+          qs: [
+            { q: "1. You can't buy this medicine without a ______. So you need to go to a doctor first.", o: ["A. paper", "B. proof", "C. profession", "D. prescription"], a: "D", e: "prescription = 醫師處方箋。" },
+            { q: "2. Someone just fell into the deep hole. Help him and call the ______.", o: ["A. shopkeeper", "B. ambulance", "C. police", "D. florist"], a: "B", e: "ambulance = 救護車。" },
+            { q: "3. He was very sick so he went to bed to ______ instead of going to work.", o: ["A. rest", "B. ache", "C. aid", "D. flu"], a: "A", e: "rest = 臥床休息。" },
+            { q: "4. The ______ works very well with the cut. You don't need to worry.", o: ["A. advice", "B. prescription", "C. painkiller", "D. band-aid"], a: "D", e: "band-aid = OK繃。" },
+            { q: "5. He can't stop ______ after eating that big meal. There must be something wrong with the dinner.", o: ["A. sneezing", "B. runny nose", "C. canceling", "D. throwing up"], a: "D", e: "throwing up = 嘔吐。" },
+            { q: "6. The nurse will take your ______ to see if you have a fever.", o: ["A. medicine", "B. injection", "C. temperature", "D. reception"], a: "C", e: "take temperature = 量體溫。" },
+            { q: "7. The air is dirty today. I keep coughing and ______.", o: ["A. sneezing", "B. runny", "C. breathing", "D. aching"], a: "A", e: "sneezing = 打噴嚏。" },
+            { q: "8. He's got a new watch on his ______. He's happy with it.", o: ["A. knee", "B. ankle", "C. neck", "D. wrist"], a: "D", e: "wrist = 手腕。" },
+            { q: "9. The doctor asked him to do a medical ______ to see if something serious is going on.", o: ["A. allergy", "B. test", "C. injection", "D. temperature"], a: "B", e: "medical test = 醫療檢驗。" },
+            { q: "10. Some people go to a(n) ______ rather than a doctor to buy medicine when feeling sick.", o: ["A. clinic", "B. check point", "C. ambulance", "D. drugstore"], a: "D", e: "drugstore = 藥局/藥妝店。" }
+          ]
+        },
+        {
+          id: "u16", title: "Unit Test 16 Emergency & Lost Items",
+          qs: [
+            { q: "1. I lost my ______. Luckily, I don't have too much money in it.", o: ["A. tablet", "B. smartphone", "C. credit card", "D. wallet"], a: "D", e: "wallet = 錢包。" },
+            { q: "2. You were robbed? I think you should go to a police station to ______ a report.", o: ["A. take", "B. file", "C. get", "D. watch"], a: "B", e: "file a report = 報案/做筆錄。" },
+            { q: "3. I need to ______ some money from the ATM. Is there one nearby?", o: ["A. withdraw", "B. do", "C. change", "D. exchange"], a: "A", e: "withdraw money = 領錢。" },
+            { q: "4. You have to ______ the form in order to check in to the hotel.", o: ["A. full of", "B. fill out", "C. fix at", "D. fool around"], a: "B", e: "fill out the form = 填寫表格。" },
+            { q: "5. This yellow ______ looks small, but it can carry a lot. I always use it for my trips.", o: ["A. form", "B. handle", "C. suitcase", "D. visitor"], a: "C", e: "suitcase = 行李箱。" },
+            { q: "6. The most important travel document is your ______. You should keep it in a very safe place.", o: ["A. check", "B. passport", "C. boarding pass", "D. air ticket"], a: "B", e: "passport = 護照。" },
+            { q: "7. The screen of a(n) ______ is much bigger than it of a smartphone. So people usually read an e-book on it.", o: ["A. charger", "B. earphone", "C. password", "D. tablet"], a: "D", e: "tablet = 平板電腦。" },
+            { q: "8. There is always a line at the bottom of the report for you to ______. It shows that you agree with everything on it.", o: ["A. sign", "B. fill up", "C. withdraw", "D. pass though"], a: "A", e: "sign = 簽名。" },
+            { q: "9. The ______ is always changing. So when you need to buy local money, you need to check it.", o: ["A. entrance fee", "B. bus fare", "C. exchange rate", "D. service charge"], a: "C", e: "exchange rate = 匯率。" },
+            { q: "10. If a ______ happens, you should go to a police station to report it.", o: ["A. robber", "B. robbery", "C. lost and found", "D. loss"], a: "B", e: "robbery = 搶劫事件。" }
+          ]
+        }
+      ]
     };
 
-    let currentUnit = null;
-    let areAllAnswersVisible = false;
+    let activeUnitId = "";
 
-    function toggleSidebar() {
+    // 介面折疊與開關
+    function toggleNav() {
       const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebarOverlay');
-      if (window.innerWidth <= 768) {
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('active');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    function toggleFolder(id) {
+      const box = document.getElementById(id);
+      const arr = document.getElementById('arr-' + id);
+      box.classList.toggle('collapsed');
+      arr.textContent = box.classList.contains('collapsed') ? '▶' : '▼';
+    }
+
+    // 初始化左側導覽目錄
+    function initSidebar() {
+      // 1. 音訊清單
+      const audioBox = document.getElementById('folder-audio');
+      AUDIO_TRACKS.forEach((track, idx) => {
+        const item = document.createElement('div');
+        item.className = 'nav-item';
+        item.id = `nav-${track.id}`;
+        item.innerHTML = `<span>🎵 ${track.title}</span>`;
+        item.onclick = () => playAudio(idx);
+        audioBox.appendChild(item);
+      });
+
+      // 2. 期中考
+      const midBox = document.getElementById('folder-mid');
+      QUIZ_DATA.midterm.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'nav-item';
+        item.id = `nav-${u.id}`;
+        item.innerHTML = `<span>📄 ${u.title}</span>`;
+        item.onclick = () => loadQuizView(u, 'midterm');
+        midBox.appendChild(item);
+      });
+
+      // 3. 期末考
+      const finBox = document.getElementById('folder-fin');
+      QUIZ_DATA.final.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'nav-item';
+        item.id = `nav-${u.id}`;
+        item.innerHTML = `<span>📄 ${u.title}</span>`;
+        item.onclick = () => loadQuizView(u, 'final');
+        finBox.appendChild(item);
+      });
+    }
+
+    // 音訊播放與自動下一首
+    function playAudio(index) {
+      if (index < 0 || index >= AUDIO_TRACKS.length) return;
+      currentTrackIdx = index;
+      const t = AUDIO_TRACKS[index];
+      audioEl.src = t.url;
+      audioEl.play().catch(e => console.log('Auto-play prevented:', e));
+      document.getElementById('trackName').textContent = `正在播放: ${t.title}`;
+
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const activeNav = document.getElementById(`nav-${t.id}`);
+      if (activeNav) activeNav.classList.add('active');
+
+      document.getElementById('pageTitle').textContent = t.title;
+      document.getElementById('mainCard').innerHTML = `
+        <div style="text-align:center; padding: 2rem 0;">
+          <h2>🎧 ${t.title}</h2>
+          <p style="color:var(--text-muted); margin: 1rem 0;">GitHub 雲端串流播放中，播放完畢將自動跳下一首。</p>
+          <div style="margin-top:1.5rem;">
+            <button class="ctrl-btn" style="padding:8px 16px;" onclick="playNextTrack()">播放下一首 ⏭️</button>
+          </div>
+        </div>
+      `;
+      if (window.innerWidth <= 768) toggleNav();
+    }
+
+    function playNextTrack() {
+      if (currentTrackIdx + 1 < AUDIO_TRACKS.length) {
+        playAudio(currentTrackIdx + 1);
       } else {
-        sidebar.classList.toggle('collapsed');
+        alert("已播放到最後一首！");
       }
     }
 
-    function renderTree() {
-      const container = document.getElementById('treeContainer');
-      container.innerHTML = '';
-      const filter = document.getElementById('searchInput').value.trim().toLowerCase();
+    audioEl.addEventListener('ended', playNextTrack);
 
-      ['midterm', 'final'].forEach(examType => {
-        const exam = QUIZ_DATA[examType];
-        const matchedUnits = exam.units.filter(u => 
-          u.title.toLowerCase().includes(filter) ||
-          u.questions.some(q => q.q.toLowerCase().includes(filter) || q.exp.toLowerCase().includes(filter))
-        );
+    function changeSpeed(rate) {
+      audioEl.playbackRate = rate;
+      document.getElementById('trackName').textContent = `播放速度: ${rate}x`;
+    }
 
-        if (filter && matchedUnits.length === 0) return;
+    // 載入題庫畫面
+    function loadQuizView(unit, type) {
+      activeUnitId = unit.id;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const activeNav = document.getElementById(`nav-${unit.id}`);
+      if (activeNav) activeNav.classList.add('active');
 
-        const block = document.createElement('div');
-        block.className = 'folder-block';
-        block.innerHTML = `
-          <div class="
+      document.getElementById('pageTitle').textContent = unit.title;
+      const card = document.getElementById('mainCard');
+      
+      let html = `
+        <div style="border-bottom: 2px solid var(--primary); padding-bottom: 0.6rem; margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+          <h2>${unit.title}</h2>
+          <span style="font-size:0.85rem; color:var(--text-muted);">10 題精選互動測驗</span>
+        </div>
+      `;
+
+      unit.qs.forEach((q, idx) => {
+        html += `
+          <div class="q-box" id="q-box-${idx}">
+            <div class="q-text">${escapeHtml(q.q)}</div>
+            <div class="opt-grid">
+              ${q.o.map(opt => `<button class="opt-btn" onclick="checkOption(this, '${opt.charAt(0)}', '${q.a}', ${idx})">${escapeHtml(opt)}</button>`).join('')}
+            </div>
+            <div class="ans-box hidden" id="ans-box-${idx}">
+              <div style="font-weight:700; color:#166534; margin-bottom:3px;">✓ 正確答案: ${q.a}</div>
+              <div style="color:#15803d; line-height:1.5;">💡 答案解釋: ${escapeHtml(q.e)}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      card.innerHTML = html;
+      document.querySelector('.main-scroll').scrollTop = 0;
+      if (window.innerWidth <= 768) toggleNav();
+    }
+
+    function checkOption(btn, selected, correct, idx) {
+      const parent = btn.parentElement;
+      Array.from(parent.children).forEach(b => {
+        b.classList.remove('correct', 'wrong');
+        if (b.innerText.startsWith(correct)) b.classList.add('correct');
+      });
+      if (selected !== correct) btn.classList.add('wrong');
+      document.getElementById(`ans-box-${idx}`).classList.remove('hidden');
+    }
+
+    // 載入影音檢視
+    function loadVideoView(title, videoUrl) {
+      document.getElementById('pageTitle').textContent = title;
+      document.getElementById('mainCard').innerHTML = `
+        <h2>📺 ${title}</h2>
+        <p style="color:var(--text-muted); margin: 0.5rem 0 1rem;">支援在線聆聽與觀看，不佔用本機容量。</p>
+        <div class="video-container">
+          <iframe src="${videoUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      `;
+      if (window.innerWidth <= 768) toggleNav();
+    }
+
+    // 載入本機自訂上傳檢視
+    function loadUploadView() {
+      document.getElementById('pageTitle').textContent = "本機檔案臨時上傳與播放";
+      document.getElementById('mainCard').innerHTML = `
+        <h2>📤 自備音檔與講義分享</h2>
+        <p style="color:var(--text-muted); margin: 0.5rem 0 1.5rem;">此處可直接載入您電腦裡的本機 MP3 進行測試播放：</p>
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept="audio/*" style="display:none" onchange="handleLocalFile(event)">
+          <div style="font-size:2rem; margin-bottom:8px;">📁</div>
+          <p>點擊此處選擇本機 MP3 檔案進行播放</p>
+        </div>
+      `;
+      if (window.innerWidth <= 768) toggleNav();
+    }
+
+    function handleLocalFile(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        audioEl.src = url;
+        audioEl.play();
+        document.getElementById('trackName').textContent = `本地播放: ${file.name}`;
+      }
+    }
+
+    // 一鍵分享當前頁面連結
+    function copyShareUrl() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        alert("已複製分享連結！同學點開即可直接進入此平台：\n" + url);
+      }).catch(() => {
+        prompt("請複製以下連結分享給同學：", url);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+    }
+
+    window.onload = () => {
+      initSidebar();
+      // 預設先開啟 Unit 1 題庫
+      loadQuizView(QUIZ_DATA.midterm[0], 'midterm');
+    };
+  </script>
+</body>
+</html>
