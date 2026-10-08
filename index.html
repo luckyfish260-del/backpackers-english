@@ -2,15 +2,18 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>背包客英文 - 課程指引與題庫管理系統</title>
-  <!-- 支援 PDF 解析 -->
+  <!-- 核心設定：允許雙指縮放 (最大放大 5 倍) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>背包客英文 - 多媒體與題庫學習平台</title>
+  
+  <!-- PDF 解析庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- 支援 Word (.docx) 解析 -->
+  <!-- Word (.docx) 解析庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   </script>
+
   <style>
     :root {
       --primary: #2563eb;
@@ -21,16 +24,11 @@
       --text-main: #1e293b;
       --text-muted: #64748b;
       --border: #e2e8f0;
-      --accent: #0284c7;
       --danger: #ef4444;
       --success: #10b981;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -39,9 +37,20 @@
       display: flex;
       height: 100vh;
       overflow: hidden;
+      position: relative;
     }
 
-    /* 側邊欄 */
+    /* 手機側邊欄遮罩 */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 40;
+    }
+    .sidebar-overlay.active { display: block; }
+
+    /* 左側選單列 */
     aside {
       width: 320px;
       background-color: var(--sidebar-bg);
@@ -49,33 +58,41 @@
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      z-index: 50;
+      transition: transform 0.3s ease;
     }
 
     .sidebar-header {
-      padding: 1.25rem;
+      padding: 1rem 1.25rem;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-
     .sidebar-header h2 {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--primary);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
-
-    .sidebar-header p {
-      font-size: 0.8rem;
+    .close-sidebar-btn {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
       color: var(--text-muted);
-      margin-top: 0.25rem;
+      padding: 4px;
+    }
+    .db-status {
+      font-size: 0.72rem;
+      color: var(--success);
+      margin-top: 0.2rem;
     }
 
     .search-box {
-      padding: 0.75rem 1.25rem;
+      padding: 0.75rem 1rem;
       border-bottom: 1px solid var(--border);
     }
-
     .search-box input {
       width: 100%;
       padding: 0.5rem 0.75rem;
@@ -85,277 +102,295 @@
       outline: none;
     }
 
-    .search-box input:focus {
-      border-color: var(--primary);
-    }
-
     .file-list {
       flex: 1;
       overflow-y: auto;
-      padding: 0.75rem;
+      padding: 0.5rem 0.75rem;
     }
-
     .file-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem;
+      padding: 0.65rem 0.75rem;
       border-radius: 8px;
       cursor: pointer;
       margin-bottom: 0.35rem;
-      transition: background 0.15s ease;
       border: 1px solid transparent;
+      transition: background 0.15s;
     }
-
-    .file-item:hover {
-      background-color: #f1f5f9;
+    .file-item:hover { background-color: #f1f5f9; }
+    .file-item.active { background-color: #eff6ff; border-color: #bfdbfe; }
+    
+    .file-info { 
+      overflow: hidden; 
+      flex: 1;
+      margin-right: 0.5rem;
     }
-
-    .file-item.active {
-      background-color: #eff6ff;
-      border-color: #bfdbfe;
-    }
-
-    .file-info {
-      overflow: hidden;
-    }
-
     .file-title {
-      font-size: 0.875rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      color: var(--text-main);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    .file-meta {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 0.15rem;
-    }
-
+    .file-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
+    
     .btn-delete {
       color: var(--text-muted);
-      background: none;
-      border: none;
-      padding: 4px 6px;
-      border-radius: 4px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 0.9rem;
-      line-height: 1;
-    }
-
-    .btn-delete:hover {
-      color: var(--danger);
-      background-color: #fee2e2;
-    }
-
-    .sidebar-actions {
-      padding: 1rem 1.25rem;
-      border-top: 1px solid var(--border);
-      background: #fafafa;
-    }
-
-    .upload-btn-label {
+      font-size: 0.85rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .btn-delete:hover, .btn-delete:active { 
+      color: #fff; 
+      background-color: var(--danger); 
+      border-color: var(--danger);
+    }
+
+    .sidebar-actions {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .upload-btn-label {
       background-color: var(--primary);
       color: white;
-      padding: 0.65rem;
+      padding: 0.6rem;
       border-radius: 6px;
-      font-size: 0.875rem;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
-      transition: background 0.15s;
     }
-
-    .upload-btn-label:hover {
-      background-color: var(--primary-hover);
+    .upload-btn-label:hover { background-color: var(--primary-hover); }
+    .add-yt-btn {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: #334155;
+      padding: 0.45rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
     }
+    .add-yt-btn:hover { background: #f1f5f9; }
 
-    /* 主展示區域 */
+    /* 主內容區 */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: #f8fafc;
+      width: 100%;
     }
-
     .main-header {
-      padding: 1rem 1.75rem;
+      padding: 0.85rem 1.25rem;
       background: #fff;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-    }
-
-    .doc-title-area h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-    }
-
-    .action-controls {
-      display: flex;
       gap: 0.5rem;
     }
-
-    .btn {
-      padding: 0.45rem 0.9rem;
-      font-size: 0.85rem;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      overflow: hidden;
+    }
+    .menu-toggle-btn {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.6rem;
       border-radius: 6px;
-      font-weight: 500;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .main-header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .action-controls { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .btn {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      border-radius: 6px;
       cursor: pointer;
       border: 1px solid var(--border);
       background: #fff;
-      color: var(--text-main);
     }
-
-    .btn:hover {
-      background: #f1f5f9;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
+    .btn:hover { background: #f1f5f9; }
+    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     .main-body {
       flex: 1;
       overflow-y: auto;
-      padding: 1.75rem;
+      padding: 1.25rem;
+      -webkit-overflow-scrolling: touch;
     }
 
+    /* 響應式內容容器（電腦版預設樣式：最大寬度 1200px、居中、內邊距 20px） */
     .content-card {
       background: var(--card-bg);
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       border: 1px solid var(--border);
-      padding: 2rem;
       min-height: 100%;
       line-height: 1.65;
-    }
-
-    table {
+      overflow-x: auto;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
       width: 100%;
-      border-collapse: collapse;
-      margin: 1.25rem 0;
-      font-size: 0.9rem;
-    }
-
-    table th, table td {
-      border: 1px solid var(--border);
-      padding: 0.65rem 0.85rem;
-      text-align: left;
-    }
-
-    table th {
-      background-color: #f1f5f9;
-      font-weight: 600;
-    }
-
-    .test-item {
-      background: #fdfdfd;
-      border: 1px solid #e2e8f0;
-      border-left: 4px solid var(--primary);
-      border-radius: 6px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1rem;
-    }
-
-    .test-question {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #0f172a;
-    }
-
-    .test-options {
-      margin-bottom: 0.5rem;
-      color: #334155;
-    }
-
-    .test-answer {
-      font-weight: 700;
-      color: var(--success);
-      margin-bottom: 0.25rem;
-    }
-
-    .test-expl {
-      font-size: 0.875rem;
-      color: #64748b;
-      background: #f8fafc;
-      padding: 0.4rem 0.6rem;
-      border-radius: 4px;
+      box-sizing: border-box;
     }
 
     .badge {
       display: inline-block;
-      padding: 0.2rem 0.55rem;
-      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
       font-weight: 600;
       border-radius: 4px;
       background: #e0f2fe;
       color: #0369a1;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    /* 表格自適應與滾動 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table th, table td {
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+      min-width: 90px;
+    }
+    table th { background-color: #f1f5f9; }
+
+    /* 影音播放器容器 */
+    .media-container {
+      margin: 1.25rem 0;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 0.75rem;
+      display: flex;
+      justify-content: center;
+    }
+    audio, video { width: 100%; max-width: 100%; }
+    .yt-iframe-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    .yt-iframe-container iframe {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%; border: 0;
     }
 
     .editable-area {
       width: 100%;
-      height: 100%;
-      min-height: 500px;
+      height: 450px;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 1rem;
+      padding: 0.75rem;
       font-family: monospace;
-      font-size: 0.9rem;
-      resize: vertical;
       outline: none;
+    }
+
+    /* ========================================================
+       手機螢幕（寬度 768px 以下）自適應調整
+       ======================================================== */
+    @media (max-width: 768px) {
+      aside {
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        width: 82%;
+        max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+      }
+      aside.open { transform: translateX(0); }
+      .close-sidebar-btn { display: block; }
+      .menu-toggle-btn { display: block; }
+      
+      .main-header { padding: 0.65rem 0.85rem; }
+      .main-header h1 { font-size: 1rem; }
+      .main-body { padding: 0.5rem; }
+
+      /* 手機版內邊距調整為 10px */
+      .content-card {
+        padding: 10px;
+        border-radius: 6px;
+      }
+      .btn { padding: 0.35rem 0.55rem; font-size: 0.75rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- 左側選單 -->
-  <aside>
+  <!-- 手機版選單遮罩 -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- 側邊欄清單 -->
+  <aside id="sidebar">
     <div class="sidebar-header">
-      <h2>🎒 背包客英文平台</h2>
-      <p>支援 Word (.docx)、PDF、文字檔增刪</p>
+      <div>
+        <h2>🎒 背包客英文</h2>
+        <div class="db-status">● 支援縮放、影音與教材</div>
+      </div>
+      <button class="close-sidebar-btn" onclick="closeSidebar()" title="關閉選單">✕</button>
     </div>
     
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="搜尋檔案或題庫關鍵字..." oninput="filterFiles()">
+      <input type="text" id="searchInput" placeholder="搜尋項目..." oninput="filterFiles()">
     </div>
 
     <div class="file-list" id="fileList"></div>
 
     <div class="sidebar-actions">
       <label class="upload-btn-label">
-        <span>➕ 上傳新增檔案 (Word/PDF/TXT)</span>
-        <!-- 擴充 accept 支援 docx, doc, pdf, txt, md -->
-        <input type="file" id="fileInput" accept=".docx,.pdf,.txt,.md" multiple style="display:none" onchange="handleFileUpload(event)">
+        <span>➕ 上傳檔案 (Word/PDF/MP3/MP4)</span>
+        <input type="file" id="fileInput" accept=".docx,.pdf,.txt,.md,.mp3,.wav,.m4a,.mp4,.webm" multiple style="display:none" onchange="handleFileUpload(event)">
       </label>
+      <button class="add-yt-btn" onclick="addYouTubeLink()">🔗 嵌入 YouTube 影片</button>
     </div>
   </aside>
 
-  <!-- 右側展示區 -->
+  <!-- 主內容閱讀區 -->
   <main>
     <header class="main-header">
-      <div class="doc-title-area">
+      <div class="header-left">
+        <button class="menu-toggle-btn" onclick="openSidebar()" title="開啟選單">☰</button>
         <h1 id="currentDocTitle">載入中...</h1>
       </div>
       <div class="action-controls">
-        <button class="btn" onclick="toggleEditMode()" id="editToggleBtn">✏️ 編輯本頁內容</button>
-        <button class="btn btn-primary" onclick="exportData()">💾 匯出備份 (JSON)</button>
+        <button class="btn" onclick="toggleEditMode()" id="editToggleBtn">✏️ 編輯</button>
+        <button class="btn btn-primary" onclick="exportData()">💾 備份</button>
       </div>
     </header>
 
@@ -365,187 +400,153 @@
   </main>
 
   <script>
-    const initialDocuments = [
-      {
-        id: "doc-syllabus",
-        title: "0-2 教學大綱與總學習指引",
-        type: "syllabus",
-        date: "2026/09",
-        content: `
-          <span class="badge">課程資訊</span>
-          <h2>課程名稱：背包客英文 (English for Backpackers)</h2>
-          <p><strong>學分數：</strong> 2 學分 ｜ <strong>授課方式：</strong> 全遠距（含 4 次同步視訊教學與非同步教材）</p>
-          <hr style="margin: 1.25rem 0; border: none; border-top: 1px solid var(--border);">
-          <h3>🎯 課程目標</h3>
-          <ul style="margin: 0.75rem 0 1.25rem 1.5rem;">
-            <li>輕鬆掌握出國旅遊所需的基礎英文溝通技巧。</li>
-            <li>能以英文進行訂房、問路、購票、日常交流等。</li>
-            <li>了解常見文化差異，提升跨文化交流能力。</li>
-            <li>增強自信，在旅途中勇敢開口使用英語。</li>
-          </ul>
-          <h3>📊 成績評量標準</h3>
-          <table>
-            <tr><th>評量項目</th><th>佔比</th><th>詳細說明</th></tr>
-            <tr><td><strong>平時成績</strong></td><td>30%</td><td>數位教材閱讀 (10分) + 自我評量 (10分) + 視訊面授出席與議題討論 (10分)。須於 <strong>2026/12/31</strong> 前完成。</td></tr>
-            <tr><td><strong>期中評量</strong></td><td>30%</td><td><strong>115/11/2 - 115/11/8</strong> 線上電腦測驗（100分鐘，40題選擇題）。</td></tr>
-            <tr><td><strong>期末評量</strong></td><td>40%</td><td><strong>116/1/4 - 116/1/10</strong> 線上電腦測驗（100分鐘，40題選擇題）。</td></tr>
-          </table>
-          <h3>💻 同步視訊面授時程 (週四晚上)</h3>
-          <p>第1次：115/9/10 ｜ 第2次：115/10/8 ｜ 第3次：115/11/12 ｜ 第4次：115/12/24</p>
-          <h3 style="margin-top:1.25rem;">📌 重要延伸資源</h3>
-          <p>教科書作者盧老師課後旅遊與學習頻道：<a href="https://www.youtube.com/@lichunlu1746" target="_blank" style="color:var(--primary);">YouTube 學習頻道</a></p>
-        `
-      },
-      {
-        id: "doc-schedule",
-        title: "0-3 背包客英文授課週次與學習活動",
-        type: "schedule",
-        date: "2026/09",
-        content: `
-          <span class="badge">授課進度</span>
-          <h2>全學期 18 週教學時程表</h2>
-          <table>
-            <thead><tr><th>週次</th><th>當週時程</th><th>教學單元</th><th>學習重點與目標</th><th>活動與評量</th><th>同步面授</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td>9/7-9/13</td><td>Unit 1 Taking a Vacation</td><td>旅遊偏好、季節氣候、夢想句型</td><td>教材閱讀、Unit test 1</td><td>第 1 次視訊 (9/10)</td></tr>
-              <tr><td>2</td><td>9/14-9/20</td><td>Unit 2 Preparing for a Trip</td><td>旅行用品、打包詞彙、出發理由</td><td>教材閱讀、Unit test 2、議題討論 1</td><td>-</td></tr>
-              <tr><td>3</td><td>9/21-9/27</td><td>Unit 3 Advance Bookings</td><td>訂購機票住宿、隨性vs預約、處理訂單錯誤</td><td>教材閱讀、Unit test 3、議題討論 2</td><td>-</td></tr>
-              <tr><td>4</td><td>9/28-10/4</td><td>Unit 4 Airport Check-In</td><td>登機報到、行李托運、安檢應對</td><td>教材閱讀、Unit test 4</td><td>-</td></tr>
-              <tr><td>5</td><td>10/5-10/11</td><td>Unit 5 On Board</td><td>機上需求、餐點服務、搭機禮儀</td><td>教材閱讀、Unit test 5、議題討論 3</td><td>第 2 次視訊 (10/8)</td></tr>
-              <tr><td>6</td><td>10/12-10/18</td><td>Unit 6 Going into the Country</td><td>入境海關申報、停留時間、海關規範</td><td>教材閱讀、Unit test 6</td><td>-</td></tr>
-              <tr><td>7</td><td>10/19-10/25</td><td>Unit 7 Finding the Hotel</td><td>飯店路線詢問、入住退房服務應對</td><td>教材閱讀、Unit test 7</td><td>-</td></tr>
-              <tr><td>8</td><td>10/26-11/1</td><td>Unit 8 New Friends</td><td>住宿交友、自我介紹、文化禁忌話題</td><td>Unit test 8、第一次自我評量</td><td>-</td></tr>
-              <tr style="background:#fef3c7;"><td>9</td><td>11/2-11/8</td><td>Consolidation 1</td><td>複習 Unit 1-8</td><td>線上期中考試</td><td>-</td></tr>
-              <tr><td>10</td><td>11/9-11/15</td><td>Unit 9 About Me</td><td>個人日常、職業描述、介紹台灣文化</td><td>教材閱讀、Unit test 9、議題討論 4</td><td>第 3 次視訊 (11/12)</td></tr>
-              <tr><td>11</td><td>11/16-11/22</td><td>Unit 10 Fun Things to Do</td><td>休閒戶外活動、邀請朋友與建議</td><td>教材閱讀、Unit test 10</td><td>-</td></tr>
-              <tr><td>12</td><td>11/23-11/29</td><td>Unit 11 Going Somewhere</td><td>大眾運輸、購票問路、各國交通文化</td><td>教材閱讀、Unit test 11</td><td>-</td></tr>
-              <tr><td>13</td><td>11/30-12/6</td><td>Unit 12 At the Supermarket</td><td>超市購物、包裝份量、食材問答</td><td>教材閱讀、Unit test 12、議題討論 5</td><td>-</td></tr>
-              <tr><td>14</td><td>12/7-12/13</td><td>Unit 13 Best Buys</td><td>服飾規格、尺寸折扣、必備用品</td><td>教材閱讀、Unit test 13</td><td>-</td></tr>
-              <tr><td>15</td><td>12/14-12/20</td><td>Unit 14 Eating Out</td><td>餐廳點餐、小費過敏、推廣台灣小吃</td><td>教材閱讀、Unit test 14、議題討論 6</td><td>-</td></tr>
-              <tr><td>16</td><td>12/21-12/27</td><td>Unit 15 Feeling Sick</td><td>就醫症狀描述、買藥、醫療文化差異</td><td>Unit test 15、第二次自我評量</td><td>第 4 次視訊 (12/24)</td></tr>
-              <tr><td>17</td><td>12/28-1/3</td><td>Unit 16 Need Help</td><td>緊急狀況、遺失報案、冷靜求助</td><td>教材閱讀、Unit test 16</td><td>-</td></tr>
-              <tr style="background:#fee2e2;"><td>18</td><td>1/4-1/10</td><td>Consolidation 2</td><td>複習 Unit 9-16</td><td>線上期末考試</td><td>-</td></tr>
-            </tbody>
-          </table>
-        `
-      },
-      {
-        id: "doc-week1",
-        title: "1-0 第1週學習指引 (Unit 1)",
-        type: "guide",
-        date: "2026/09",
-        content: `
-          <span class="badge">每週指引</span>
-          <h2>Week 1 | Unit 1 Taking a Vacation</h2>
-          <p style="margin: 0.75rem 0;">旅行的第一步，通常都是從「我想去哪裡？」開始。本週從 Taking a Vacation 出發，學習描述目的地、旅遊季節與氣候，並表達旅行夢想。</p>
-          <h3>✅ 本週學習目標</h3>
-          <ul style="margin: 0.5rem 0 1.25rem 1.5rem;">
-            <li>用英文描述自己的旅遊偏好與想去的目的地。</li>
-            <li>比較不同季節或不同國家的旅遊氣候。</li>
-            <li>使用 <code>It has been my dream...</code> 等表達方式談論夢想與計畫。</li>
-          </ul>
-          <h3>📝 學習步驟與操作路徑</h3>
-          <ol style="margin: 0.5rem 0 1.25rem 1.5rem; line-height: 1.8;">
-            <li><strong>STEP 1 先了解任務：</strong> 進入旭聯學習平臺，找到 Week 1 | Unit 1 Taking a Vacation。</li>
-            <li><strong>STEP 2 依序觀看影片：</strong> 觀看 1-1～1-7 教學內容。</li>
-            <li><strong>STEP 3 聽力與對話實戰：</strong> 留意旅遊天數與景點特色，練習回答 <code>Is there any place you want to visit?</code>。</li>
-            <li><strong>STEP 4 完成單元測驗：</strong> 請由左側功能選單進入<strong>「自我練習」</strong>尋找 Unit 1 Test（共 10 題，不計分但列入題庫）。</li>
-            <li><strong>STEP 5 參加視訊面授：</strong> 週四依公告時間進入視訊教室。</li>
-          </ol>
-        `
-      },
-      {
-        id: "doc-midterm-test",
-        title: "背包客英文 - 期中考題庫 (Unit 1 - 8)",
-        type: "exam",
-        date: "2026/10",
-        content: `
-          <span class="badge">期中題庫 (Unit 1 ~ 8)</span>
-          <h2>期中考題庫全彙整 (共 80 題)</h2>
-          <h3 style="margin: 1.5rem 0 0.75rem 0; color:var(--primary);">Unit 1 Taking a Vacation</h3>
-          <div class="test-item"><div class="test-question">1. There are two ______ languages in Canada: English and French.</div><div class="test-options">A. amazing B. official C. attractive D. scorching</div><div class="test-answer">正確答案：B</div><div class="test-expl">加拿大的兩種「官方語言」是 official。</div></div>
-          <div class="test-item"><div class="test-question">2. If you don't have much time to do research, why don't you join a ______ for this vacation?</div><div class="test-options">A. site B. pyramid C. team D. tour</div><div class="test-answer">正確答案：D</div><div class="test-expl">join a tour = 參加旅行團。</div></div>
-          <div class="test-item"><div class="test-question">3. Joe has been ______ by Egyptian history. He wants to visit Egypt.</div><div class="test-options">A. fascinated B. amazing C. interested D. guessed</div><div class="test-answer">正確答案：A</div><div class="test-expl">be fascinated by = 被……吸引。</div></div>
-          <div class="test-item"><div class="test-question">4. She needs to ______ this paper to show that she agrees with it.</div><div class="test-options">A. join B. catch C. sign D. visit</div><div class="test-answer">正確答案：C</div><div class="test-expl">sign a paper = 簽署文件表示同意。</div></div>
-          <div class="test-item"><div class="test-question">5. Madrid is the ______ city of Spain.</div><div class="test-options">A. capital B. official C. themed D. outdoor</div><div class="test-answer">正確答案：A</div><div class="test-expl">capital city = 首都。</div></div>
-          <div class="test-item"><div class="test-question">6. College students have a one-week spring ______ this year in April.</div><div class="test-options">A. destination B. station C. bank D. break</div><div class="test-answer">正確答案：D</div><div class="test-expl">spring break = 春假。</div></div>
-          <div class="test-item"><div class="test-question">7. The family is going to ______ a vacation next month.</div><div class="test-options">A. get on B. go on C. go to D. due to</div><div class="test-answer">正確答案：B</div><div class="test-expl">go on a vacation = 去度假。</div></div>
-          <div class="test-item"><div class="test-question">8. I've always wanted to ______ the Sahara. It is my dream.</div><div class="test-options">A. visit B. go C. take D. get</div><div class="test-answer">正確答案：A</div><div class="test-expl">visit + 地名 = 造訪某地。</div></div>
-          <div class="test-item"><div class="test-question">9. They went to the Great Barrier Reef and did ______ there. That was wonderful.</div><div class="test-options">A. hiking B. skiing C. bungee jumping D. snorkeling</div><div class="test-answer">正確答案：D</div><div class="test-expl">大堡礁代表活動為 snorkeling (浮潛)。</div></div>
-          <div class="test-item"><div class="test-question">10. I'm ______ of nature. Visiting New Zealand has been my dream.</div><div class="test-options">A. found B. find C. fond D. open</div><div class="test-answer">正確答案：C</div><div class="test-expl">be fond of = 喜愛……。</div></div>
-        `
-      },
-      {
-        id: "doc-final-test",
-        title: "背包客英文 - 期末考題庫 (Unit 9 - 16)",
-        type: "exam",
-        date: "2026/10",
-        content: `
-          <span class="badge">期末題庫 (Unit 9 ~ 16)</span>
-          <h2>期末考題庫全彙整 (共 80 題)</h2>
-          <h3 style="margin: 1.5rem 0 0.75rem 0; color:var(--primary);">Unit 9 About Me</h3>
-          <div class="test-item"><div class="test-question">1. I enjoy ______ with my family while eating dinner.</div><div class="test-options">A. making B. chatting C. playing D. biking</div><div class="test-answer">正確答案：B</div><div class="test-expl">chatting with family = 和家人聊天。enjoy + V-ing。</div></div>
-          <div class="test-item"><div class="test-question">2. She likes cooking and wants to be a(n) ______ at a restaurant someday.</div><div class="test-options">A. chef B. manager C. officer D. nurse</div><div class="test-answer">正確答案：A</div><div class="test-expl">chef = 主廚。</div></div>
-          <div class="test-item"><div class="test-question">3. Linda is a ______ at a clinic. She answers calls and takes appointments.</div><div class="test-options">A. doctor B. nurse C. cleaner D. receptionist</div><div class="test-answer">正確答案：D</div><div class="test-expl">receptionist = 櫃檯掛號人員。</div></div>
-          <div class="test-item"><div class="test-question">4. The National Palace ______ in Taipei is a must-visit in Taiwan.</div><div class="test-options">A. Ocean B. Museum C. Bubble D. City</div><div class="test-answer">正確答案：B</div><div class="test-expl">National Palace Museum = 國立故宮博物院。</div></div>
-          <div class="test-item"><div class="test-question">5. ______ is one of the very Taiwanese dishes you can find at the night market.</div><div class="test-options">A. Oyster omelet B. Pineapple cakes C. Sun Moon Lake D. Pacific Ocean</div><div class="test-answer">正確答案：A</div><div class="test-expl">Oyster omelet = 蚵仔煎。</div></div>
-        `
-      }
-    ];
-
+    const DB_NAME = 'BackpackersZoomDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'documents';
+    let db;
     let documents = [];
-    const STORAGE_KEY = 'backpackers_docs_data';
     let currentDocId = null;
     let isEditing = false;
 
-    function init() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          documents = JSON.parse(saved);
-        } catch (e) {
-          documents = initialDocuments;
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('active');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+
+    function openDatabase() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const dbInstance = e.target.result;
+          if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
+            dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => {
+          db = e.target.result;
+          resolve(db);
+        };
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    function getAllDocsFromDB() {
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+      });
+    }
+
+    function saveDocToDB(doc) {
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.put(doc);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    function deleteDocFromDB(id) {
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(id);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    async function init() {
+      await openDatabase();
+      documents = await getAllDocsFromDB();
+      
+      const hasInitKey = localStorage.getItem('bp_init_zoom_v1');
+      if (!hasInitKey && documents.length === 0) {
+        const defaultDocs = [
+          {
+            id: "doc-syllabus",
+            title: "0-2 教學大綱與總學習指引",
+            date: "2026/09",
+            content: `
+              <span class="badge">課程資訊</span>
+              <h2>課程名稱：背包客英文 (English for Backpackers)</h2>
+              <p><strong>學分數：</strong> 2 學分 ｜ <strong>授課方式：</strong> 全遠距（支援手機雙指手勢放大）</p>
+              <hr style="margin:0.8rem 0;">
+              <h3>🎯 評量方式</h3>
+              <table>
+                <tr><th>項目</th><th>比重</th><th>時程規定</th></tr>
+                <tr><td>平時成績</td><td>30%</td><td>2026/12/31 前完成</td></tr>
+                <tr><td>期中考試</td><td>30%</td><td>115/11/2 - 115/11/8</td></tr>
+                <tr><td>期末考試</td><td>40%</td><td>116/1/4 - 116/1/10</td></tr>
+              </table>
+              <h3 style="margin-top:1rem;">💻 同步視訊面授</h3>
+              <p>9/10、10/8、11/12、12/24 (週四晚)</p>
+            `
+          }
+        ];
+        for (const doc of defaultDocs) {
+          await saveDocToDB(doc);
         }
-      } else {
-        documents = initialDocuments;
-        saveToStorage();
+        documents = defaultDocs;
+        localStorage.setItem('bp_init_zoom_v1', 'true');
       }
 
       renderFileList();
       if (documents.length > 0) {
         selectDocument(documents[0].id);
+      } else {
+        showEmptyView();
       }
-    }
-
-    function saveToStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
     }
 
     function renderFileList(filter = '') {
       const container = document.getElementById('fileList');
       container.innerHTML = '';
-
       const filtered = documents.filter(doc => 
         doc.title.toLowerCase().includes(filter.toLowerCase()) ||
         doc.content.toLowerCase().includes(filter.toLowerCase())
       );
 
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem; text-align:center; padding:1.5rem 0;">無任何檔案</p>';
+        return;
+      }
+
       filtered.forEach(doc => {
         const item = document.createElement('div');
         item.className = `file-item ${doc.id === currentDocId ? 'active' : ''}`;
+        
         item.onclick = (e) => {
-          if (!e.target.classList.contains('btn-delete')) {
-            selectDocument(doc.id);
-          }
+          selectDocument(doc.id);
+          closeSidebar();
         };
 
-        item.innerHTML = `
-          <div class="file-info">
-            <div class="file-title">${doc.title}</div>
-            <div class="file-meta">${doc.date || '自訂文件'}</div>
-          </div>
-          <button class="btn-delete" title="刪除檔案" onclick="deleteDocument('${doc.id}', event)">✕</button>
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'file-info';
+        fileInfo.innerHTML = `
+          <div class="file-title">${escapeHtml(doc.title)}</div>
+          <div class="file-meta">${doc.date || '教材文件'}</div>
         `;
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-delete';
+        delBtn.innerHTML = '✕';
+        delBtn.title = '刪除此項目';
+        
+        // 阻止點擊事件向上冒泡
+        delBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          deleteDocument(doc.id);
+        };
+
+        item.appendChild(fileInfo);
+        item.appendChild(delBtn);
         container.appendChild(item);
       });
     }
@@ -553,37 +554,41 @@
     function selectDocument(id) {
       currentDocId = id;
       isEditing = false;
-      document.getElementById('editToggleBtn').innerText = '✏️ 編輯本頁內容';
+      document.getElementById('editToggleBtn').innerText = '✏️ 編輯';
       renderFileList(document.getElementById('searchInput').value);
-
       const doc = documents.find(d => d.id === id);
       if (!doc) return;
-
       document.getElementById('currentDocTitle').innerText = doc.title;
       document.getElementById('contentCard').innerHTML = doc.content;
     }
 
-    function deleteDocument(id, event) {
-      event.stopPropagation();
-      const doc = documents.find(d => d.id === id);
-      if (!confirm(`確定要刪除「${doc.title}」嗎？`)) return;
-
-      documents = documents.filter(d => d.id !== id);
-      saveToStorage();
-
-      if (currentDocId === id) {
-        currentDocId = documents.length > 0 ? documents[0].id : null;
-      }
-      renderFileList();
-      if (currentDocId) {
-        selectDocument(currentDocId);
-      } else {
-        document.getElementById('currentDocTitle').innerText = '無文件';
-        document.getElementById('contentCard').innerHTML = '<p style="color:#94a3b8;">請點擊左下方上傳文件或建立新筆記。</p>';
-      }
+    function showEmptyView() {
+      currentDocId = null;
+      document.getElementById('currentDocTitle').innerText = '無文件';
+      document.getElementById('contentCard').innerHTML = '<div style="text-align:center; padding:3rem 1rem; color:#94a3b8;"><p style="font-size:1.1rem; margin-bottom:0.5rem;">目前沒有任何檔案</p><p style="font-size:0.85rem;">請點擊左側「➕ 上傳檔案」添加 Word、PDF 或影音教材。</p></div>';
     }
 
-    // 支援 Word (.docx)、PDF、純文字 (.txt, .md) 檔案解析上傳
+    async function deleteDocument(id) {
+      const doc = documents.find(d => d.id === id);
+      const docTitle = doc ? doc.title : '此項目';
+      
+      const confirmed = window.confirm(`確定要刪除「${docTitle}」嗎？`);
+      if (!confirmed) return;
+
+      await deleteDocFromDB(id);
+      documents = documents.filter(d => d.id !== id);
+
+      if (currentDocId === id) {
+        if (documents.length > 0) {
+          selectDocument(documents[0].id);
+        } else {
+          showEmptyView();
+        }
+      }
+      
+      renderFileList(document.getElementById('searchInput').value);
+    }
+
     async function handleFileUpload(event) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
@@ -595,119 +600,149 @@
         const fileNameNoExt = file.name.replace(/\.[^/.]+$/, "");
         const fileExt = file.name.split('.').pop().toLowerCase();
 
-        try {
-          if (fileExt === 'docx') {
-            // 解析 Word (.docx) 檔
-            const arrayBuffer = await file.arrayBuffer();
-            const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-            documents.push({
-              id: newId,
-              title: fileNameNoExt,
-              type: "custom-docx",
-              date: now,
-              content: `
-                <span class="badge">已上傳 Word 文件</span>
-                <h2>${file.name}</h2>
-                <div style="margin-top:1.5rem; line-height: 1.8;">${result.value || '<p>此 Word 文件無可顯示的文字內容。</p>'}</div>
-              `
-            });
-          } else if (file.type === "application/pdf" || fileExt === 'pdf') {
-            // 解析 PDF 檔
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            let fullText = '';
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-              const page = await pdf.getPage(pageNum);
-              const textContent = await page.getTextContent();
-              const pageStr = textContent.items.map(s => s.str).join(' ');
-              fullText += `<h4>第 ${pageNum} 頁</h4><p>${pageStr.replace(/\\n/g, '<br>')}</p><hr style="margin:1rem 0;">`;
-            }
+        let generatedContent = '';
 
-            documents.push({
-              id: newId,
-              title: fileNameNoExt,
-              type: "custom-pdf",
-              date: now,
-              content: `
-                <span class="badge">已上傳 PDF</span>
-                <h2>${file.name}</h2>
-                <div style="margin-top:1.5rem;">${fullText || '<p>此 PDF 無可提取之純文字。</p>'}</div>
-              `
-            });
-          } else {
-            // 解析純文字 / Markdown
-            const text = await file.text();
-            documents.push({
-              id: newId,
-              title: fileNameNoExt,
-              type: "custom-text",
-              date: now,
-              content: `
-                <span class="badge">自訂文件</span>
-                <h2>${file.name}</h2>
-                <div style="margin-top:1rem; white-space: pre-wrap; font-family: inherit;">${escapeHtml(text)}</div>
-              `
-            });
+        if (['mp3', 'wav', 'm4a'].includes(fileExt)) {
+          const base64Audio = await fileToBase64(file);
+          generatedContent = `
+            <span class="badge">聽力音訊</span>
+            <h2>🎧 ${escapeHtml(file.name)}</h2>
+            <div class="media-container">
+              <audio controls controlsList="nodownload">
+                <source src="${base64Audio}" type="${file.type || 'audio/mp3'}">
+              </audio>
+            </div>
+          `;
+        } else if (['mp4', 'webm'].includes(fileExt)) {
+          const base64Video = await fileToBase64(file);
+          generatedContent = `
+            <span class="badge">教學影片</span>
+            <h2>🎬 ${escapeHtml(file.name)}</h2>
+            <div class="media-container">
+              <video controls>
+                <source src="${base64Video}" type="${file.type || 'video/mp4'}">
+              </video>
+            </div>
+          `;
+        } else if (fileExt === 'docx') {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          generatedContent = `
+            <span class="badge">Word 講義</span>
+            <h2>📄 ${escapeHtml(file.name)}</h2>
+            <div style="margin-top:1rem; line-height: 1.8;">${result.value || '<p>此 Word 檔案無文字。</p>'}</div>
+          `;
+        } else if (fileExt === 'pdf') {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = '';
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const textContent = await page.getTextContent();
+            const pageStr = textContent.items.map(s => s.str).join(' ');
+            fullText += `<h4>第 ${pageNum} 頁</h4><p>${pageStr}</p><hr style="margin:1rem 0;">`;
           }
-        } catch (err) {
-          alert(`讀取檔案「${file.name}」失敗：${err.message}`);
+          generatedContent = `
+            <span class="badge">PDF 講義</span>
+            <h2>📑 ${escapeHtml(file.name)}</h2>
+            <div style="margin-top:1rem;">${fullText || '<p>此 PDF 無可提取之純文字。</p>'}</div>
+          `;
+        } else {
+          const text = await file.text();
+          generatedContent = `
+            <span class="badge">純文字</span>
+            <h2>📝 ${escapeHtml(file.name)}</h2>
+            <div style="margin-top:1rem; white-space: pre-wrap;">${escapeHtml(text)}</div>
+          `;
         }
+
+        const newDoc = { id: newId, title: fileNameNoExt, date: now, content: generatedContent };
+        await saveDocToDB(newDoc);
+        documents.push(newDoc);
       }
 
-      saveToStorage();
       renderFileList();
       selectDocument(documents[documents.length - 1].id);
+      closeSidebar();
       event.target.value = '';
     }
 
-    function toggleEditMode() {
+    async function addYouTubeLink() {
+      const url = prompt("請輸入 YouTube 影片網址：");
+      if (!url) return;
+
+      const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+      const videoId = (match && match[2].length === 11) ? match[2] : null;
+
+      if (!videoId) {
+        alert("無法識別此 YouTube 網址！");
+        return;
+      }
+
+      const title = prompt("請為這支教學影片命名：", "線上教學影片") || "線上教學影片";
+      const newId = 'doc-yt-' + Date.now();
+      const now = new Date().toLocaleDateString('zh-TW');
+
+      const content = `
+        <span class="badge">YouTube 影音</span>
+        <h2>🎬 ${escapeHtml(title)}</h2>
+        <div class="yt-iframe-container">
+          <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+        </div>
+      `;
+
+      const newDoc = { id: newId, title: `🎬 ${title}`, date: now, content };
+      await saveDocToDB(newDoc);
+      documents.push(newDoc);
+
+      renderFileList();
+      selectDocument(newId);
+      closeSidebar();
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    async function toggleEditMode() {
       const doc = documents.find(d => d.id === currentDocId);
       if (!doc) return;
-
       const card = document.getElementById('contentCard');
       const btn = document.getElementById('editToggleBtn');
 
       if (!isEditing) {
         isEditing = true;
-        btn.innerText = '💾 儲存修改';
-        btn.classList.add('btn-primary');
+        btn.innerText = '💾 儲存';
         card.innerHTML = `<textarea class="editable-area" id="docEditor">${doc.content}</textarea>`;
       } else {
         isEditing = false;
-        btn.innerText = '✏️ 編輯本頁內容';
-        btn.classList.remove('btn-primary');
+        btn.innerText = '✏️ 編輯';
         const updated = document.getElementById('docEditor').value;
         doc.content = updated;
-        saveToStorage();
+        await saveDocToDB(doc);
         card.innerHTML = updated;
       }
     }
 
     function filterFiles() {
-      const q = document.getElementById('searchInput').value;
-      renderFileList(q);
+      renderFileList(document.getElementById('searchInput').value);
     }
 
     function exportData() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(documents, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `背包客英文_備份_${Date.now()}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `背包客英文_備份_${Date.now()}.json`;
+      a.click();
     }
 
     function escapeHtml(string) {
-      return String(string).replace(/[&<>"']/g, function (s) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }[s];
-      });
+      return String(string).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
     }
 
     window.onload = init;
